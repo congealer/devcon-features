@@ -1,0 +1,10 @@
+{
+    "name": "Prezto",
+    "id": "prezto",
+    "version": "1.0.0",
+    "description": "Install prezeto on your home directory. You need to install zsh and git before using this feature.",
+    "options": {
+    },
+    "installsAfter": [
+    ]
+}

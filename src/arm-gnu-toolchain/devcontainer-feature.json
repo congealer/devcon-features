@@ -1,0 +1,21 @@
+{
+    "name": "arm-gnu-toolchain",
+    "id": "arm-gnu-toolchain",
+    "version": "1.0.0",
+    "description": "Install arm-gnu-toolchain for building ARM applications.",
+    "options": {
+        "version": {
+            "type": "string",
+            "default": "14.2.rel1",
+            "description": "Version of the arm-gnu-toolchain to install."
+        },
+        "target": {
+            "type": "string",
+            "default": "aarch64-none-elf",
+            "description": "Target architecture for the toolchain."
+        }
+    },
+    "installsAfter": [
+        "ghcr.io/devcontainers/features/common-utils"
+    ]
+}

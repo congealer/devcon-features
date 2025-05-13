@@ -1,0 +1,17 @@
+{
+    "test": {
+        "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+        "features": {
+            "arm-gnu-toolchain": {}
+        }
+    },
+    "test_lower_version": {
+        "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+        "features": {
+            "arm-gnu-toolchain": {
+                "version": "10.3-2021.07",
+                "target": "aarch64-none-elf"
+            }
+        }
+    }
+} 

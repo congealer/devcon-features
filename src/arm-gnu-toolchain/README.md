@@ -35,14 +35,20 @@ ARM GNU Toolchain은 ARM 아키텍처를 위한 공식 GNU 컴파일러 도구 �
 
 ## 개발 및 테스트
 
-### 테스트 실행:
+### 테스트 실행
+
+### 기본 테스트만 실행 (`--skip-scenarios` 사용)
+```bash
+devcontainer features test --features arm-gnu-toolchain --base-image mcr.microsoft.com/devcontainers/base:ubuntu --skip-scenarios .
+```
+
+## 모든 시나리오 테스트 실행 (`--skip-scenarios` 미사용)
 ```bash
 devcontainer features test --features arm-gnu-toolchain --base-image mcr.microsoft.com/devcontainers/base:ubuntu .
 ```
-
 시나리오별 옵션은 `test/arm-gnu-toolchain/scenarios.json`에서 관리합니다.
 
-### Feature 푸시:
+### Feature 푸시
 ```bash
 devcontainer features publish --registry ghcr.io --namespace congealer/devcon-features ./src/arm-gnu-toolchain
 ``` 

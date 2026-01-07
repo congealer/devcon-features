@@ -9,7 +9,7 @@ Prezto는 Zsh를 위한 프레임워크로, Zsh의 기능을 확장하고 사용
 ```json
 {
     "features": {
-        "ghcr.io/congealer/devcon-features/prezto": {}
+        "ghcr.io/Hyper-Accel/devcon-features/prezto": {}
     }
 }
 ```
@@ -25,5 +25,5 @@ devcontainer features test --features prezto --base-image mcr.microsoft.com/devc
 
 ### Feature 푸시
 ```bash
-devcontainer features publish --registry ghcr.io --namespace congealer/devcon-features ./src/prezto
+devcontainer features publish --registry ghcr.io --namespace Hyper-Accel/devcon-features ./src/prezto
 ```

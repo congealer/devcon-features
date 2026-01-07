@@ -9,7 +9,7 @@ ARM GNU Toolchain은 ARM 아키텍처를 위한 공식 GNU 컴파일러 도구 �
 ```json
 {
     "features": {
-        "ghcr.io/congealer/devcon-features/arm-gnu-toolchain": {}
+        "ghcr.io/Hyper-Accel/devcon-features/arm-gnu-toolchain": {}
     }
 }
 ```
@@ -21,7 +21,7 @@ ARM GNU Toolchain은 ARM 아키텍처를 위한 공식 GNU 컴파일러 도구 �
 ```json
 {
     "features": {
-        "ghcr.io/congealer/devcon-features/arm-gnu-toolchain": {
+        "ghcr.io/Hyper-Accel/devcon-features/arm-gnu-toolchain": {
             "version": "14.2.rel1",
             "target": "aarch64-none-elf"
         }
@@ -50,5 +50,5 @@ devcontainer features test --features arm-gnu-toolchain --base-image mcr.microso
 
 ### Feature 푸시
 ```bash
-devcontainer features publish --registry ghcr.io --namespace congealer/devcon-features ./src/arm-gnu-toolchain
+devcontainer features publish --registry ghcr.io --namespace Hyper-Accel/devcon-features ./src/arm-gnu-toolchain
 ``` 

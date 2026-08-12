@@ -21,7 +21,45 @@
 ## Testing Features
 이 항목은 개발자들을 위한 내용입니다. 모든 내용은 이 repo에 정의되어 있는 devcontainer 위에서 실행해야 합니다.
 
-### Running Tests
+### Makefile
+
+테스트는 [Makefile](Makefile)로 실행하는 것이 가장 간단합니다. CLI에는 base image 같은 기본값을 파일에 두는 방법이 없어서(설정 파일 옵션 없음, 환경변수 무시, `--config` 미지원) 매번 되풀이되는 인자를 여기에 고정해 두었습니다.
+
+| make 타깃 | 실행 내용 |
+|---|---|
+| `make test-<feature>` | 해당 feature 전체 (`test.sh` + 시나리오 + `duplicate.sh`) |
+| `make unit-<feature>` | 해당 feature의 `test.sh`만 |
+| `make scenario-<feature>` | 해당 feature의 시나리오만 |
+| `make test-global` | 전역 시나리오만 |
+| `make test` | 저장소 전체 |
+
+각 타깃이 어떤 컨테이너를 만들고 그 안에서 무엇을 실행하는지는 아래 [테스트 실행 조합](#테스트-실행-조합)에 정리돼 있습니다.
+
+`make` 또는 `make help`로 타깃 목록을 볼 수 있습니다. 없는 feature 이름을 주면 `src/` 목록과 대조해 CLI에 넘기기 전에 걸러냅니다.
+
+기본값은 변수로 덮어씁니다.
+
+```bash
+make test-prezto BASE_IMAGE=mcr.microsoft.com/devcontainers/base:debian
+make test REMOTE_USER=octocat
+```
+
+#### 테스트가 남긴 것 정리
+
+테스트는 컨테이너를 지우지만 **이미지와 빌드 캐시는 남깁니다.** 몇 번만 돌려도 수 GB가 쌓입니다.
+
+| 타깃 | 삭제 대상 |
+|---|---|
+| `make clean` | 테스트 컨테이너, 테스트 이미지, dangling 빌드 캐시 |
+| `make distclean` | 위 전부 + 미사용 빌드 캐시 전체 + base image |
+
+`distclean`은 devcontainer를 처음 열었을 때의 상태로 되돌립니다.
+
+지우는 이미지는 `vsc-<타임스탬프>-<해시>-features` 형식만입니다. 개발 컨테이너 이미지는 폴더 이름 기반(`vsc-<폴더>-<해시>-features`)이라 걸리지 않습니다.
+
+### 테스트 수동 실행
+
+Makefile이 다루지 않는 조합이 필요할 때, 또는 옵션을 직접 조합해 볼 때 씁니다.
 
 ```bash
 devcontainer features test -p <프로젝트 루트> [옵션...]
@@ -274,27 +312,34 @@ reportResults
 
 ### D. `prezto`가 zsh를 직접 설치
 
-`install.sh`의 shebang이 `#!/usr/bin/env zsh`라 zsh 없는 이미지에서는 스크립트 자체가 실행되지 않습니다. bash로 바꾸고 zsh/git이 없으면 설치하도록 하면,
+**선행 조건**: `install.sh`의 shebang이 `#!/usr/bin/env zsh`이므로 먼저 bash로 바꿔야 합니다. zsh가 없는 이미지에서는 스크립트 자체가 실행되지 않아 `apt-get install zsh` 줄까지 도달하지 못합니다.
 
-- 모든 테스트 명령에서 `-i mcr.microsoft.com/devcontainers/base:ubuntu`가 필요 없어집니다
-- [test.yaml](.github/workflows/test.yaml)의 `exclude` 4줄을 지울 수 있습니다
-
-### E. `Makefile` 추가
-
-CLI에는 base image 기본값을 파일에 두는 방법이 없습니다 (설정 파일 옵션 없음, 환경변수 무시, `--config` 미지원). 래퍼로 고정하는 것이 현실적입니다.
-
-```makefile
-BASE_IMAGE ?= mcr.microsoft.com/devcontainers/base:ubuntu
-
-test:
-	devcontainer features test -p . -i $(BASE_IMAGE)
-
-test-global:
-	devcontainer features test -p . --global-scenarios-only
-
-test-%:
-	devcontainer features test -p . -f $* -i $(BASE_IMAGE)
 ```
+/usr/bin/env: 'zsh': No such file or directory
+ERROR: Feature "Prezto" failed to install!
+```
+
+그 다음 없는 것만 설치합니다. 필요한 패키지는 `zsh`, `git`, `sudo`입니다.
+
+얻는 것:
+
+- 테스트 명령에서 `-i mcr.microsoft.com/devcontainers/base:ubuntu`가 필요 없어집니다
+- [test.yaml](.github/workflows/test.yaml)의 `exclude`에서 **prezto 관련 2줄**을 지울 수 있습니다
+- prezto가 맨 distro 이미지에서도 돌게 되어 **root로도 테스트됩니다.** 지금은 `base:*` 이미지만 쓰는데 그 이미지들이 `remoteUser: vscode`를 선언하므로 prezto는 항상 `vscode`로만 검증됩니다. `sudo -u $_REMOTE_USER`가 로직의 핵심인 feature인데 유저 하나에서만 검증되고 있습니다
+
+`exclude`의 나머지 2줄은 `arm-gnu-toolchain`이 `curl`과 `xz`를 요구해서 생긴 것입니다. 같은 방식으로 `apt-get install -y --no-install-recommends curl xz-utils`를 넣으면 됩니다 (`xz` 명령은 `xz-utils` 패키지이고, `ca-certificates`는 `curl`의 의존성으로 함께 들어옵니다). 다만 arm의 `install.sh`는 `_REMOTE_USER`를 전혀 참조하지 않으므로 root 검증으로 얻는 것은 없고, base image 폭이 넓어지는 이득만 있습니다.
+
+### E. GitHub Actions 워크플로우 전반 리뷰
+
+[test.yaml](.github/workflows/test.yaml), [release.yaml](.github/workflows/release.yaml), [validate.yml](.github/workflows/validate.yml) 세 파일 모두 `Initial commit`에 [devcontainers/feature-starter](https://github.com/devcontainers/feature-starter) 템플릿에서 그대로 들어온 뒤 검토된 적이 없습니다. 새 feature를 추가할 때 `test.yaml` 매트릭스를 갱신하지 않아 `prezto`와 `arm-gnu-toolchain`이 CI에서 빠져 있던 것도 그 결과입니다.
+
+확인할 것:
+
+- 테스트 명령이 deprecated된 위치 인자 형태입니다 (`... --skip-duplicated .`). 지금은 `.` 앞이 불리언 플래그라 정상 동작하지만 README는 `-p .`로 통일했습니다
+- `release.yaml`이 `workflow_dispatch` 전용입니다. 수동 실행만 되는 것이 의도인지
+- `release.yaml`의 `generate-docs`가 feature README를 덮어씁니다 (항목 C)
+- `validate.yml`이 `pull_request`와 `workflow_dispatch`에서만 돕니다. main에 직접 push할 때는 `devcontainer-feature.json` 검증이 없습니다
+- 새 feature를 추가할 때 매트릭스를 함께 고치도록 남길 장치가 있는지
 
 ### F. `prezto` 시나리오 추가
 

@@ -285,20 +285,6 @@ reportResults
 
 아래는 그 밖의 항목입니다. A~C는 이미 확인된 결함이고, D 이후는 개선 사항입니다.
 
-### A. `arm-gnu-toolchain` 멱등성 (테스트가 현재 실패 중)
-
-[test/arm-gnu-toolchain/duplicate.sh](test/arm-gnu-toolchain/duplicate.sh)의 `PATH is exported only once` 체크가 실패합니다. 원인이 둘인데 서로 얽혀 있어 **함께 결정해야 합니다.**
-
-1. [install.sh](src/arm-gnu-toolchain/install.sh)가 `>>`로 PATH를 추가해서 두 번 설치하면 같은 줄이 두 번 들어감
-2. 압축 해제 경로가 `/opt/gcc-arm`으로 고정이라 버전이나 타깃이 다른 두 번째 설치가 첫 번째를 덮어씀
-
-| 선택지 | 내용 | 파급 |
-|---|---|---|
-| 최소 | 경로는 그대로 두고 PATH 줄 중복만 제거 | `install.sh` 한 줄 |
-| 제대로 | `/opt/gcc-arm/<version>-<target>`으로 분리 | `install.sh`, `test.sh`, `test_lower_version.sh`, `duplicate.sh` |
-
-`>>`를 `>`로 바꾸는 최소안은 경로가 하나라는 전제에서만 맞습니다. 경로를 나누면 설치마다 PATH 줄이 하나씩 필요하므로 `>`는 첫 번째 설치의 줄을 지웁니다.
-
 ### B. `prezto`의 `installsAfter`가 비어 있음
 
 다른 세 feature는 `ghcr.io/devcontainers/features/common-utils`를 선언하는데 [src/prezto/devcontainer-feature.json](src/prezto/devcontainer-feature.json)만 `[]`입니다. zsh를 설치해 주는 것이 common-utils이므로 순서가 보장되지 않으면 zsh 없이 prezto가 먼저 실행될 수 있습니다.
@@ -327,7 +313,7 @@ ERROR: Feature "Prezto" failed to install!
 - [test.yaml](.github/workflows/test.yaml)의 `exclude`에서 **prezto 관련 2줄**을 지울 수 있습니다
 - prezto가 맨 distro 이미지에서도 돌게 되어 **root로도 테스트됩니다.** 지금은 `base:*` 이미지만 쓰는데 그 이미지들이 `remoteUser: vscode`를 선언하므로 prezto는 항상 `vscode`로만 검증됩니다. `sudo -u $_REMOTE_USER`가 로직의 핵심인 feature인데 유저 하나에서만 검증되고 있습니다
 
-`exclude`의 나머지 2줄은 `arm-gnu-toolchain`이 `curl`과 `xz`를 요구해서 생긴 것입니다. 같은 방식으로 `apt-get install -y --no-install-recommends curl xz-utils`를 넣으면 됩니다 (`xz` 명령은 `xz-utils` 패키지이고, `ca-certificates`는 `curl`의 의존성으로 함께 들어옵니다). 다만 arm의 `install.sh`는 `_REMOTE_USER`를 전혀 참조하지 않으므로 root 검증으로 얻는 것은 없고, base image 폭이 넓어지는 이득만 있습니다.
+`arm-gnu-toolchain`은 이미 `curl`/`ca-certificates`/`xz-utils`를 스스로 설치하도록 고쳤고 `debian:latest`와 `ubuntu:latest`에서 통과를 확인했습니다. 남은 것은 `exclude`의 arm 2줄을 지우는 것뿐이며, 항목 E에 함께 적어두었습니다.
 
 ### E. GitHub Actions 워크플로우 전반 리뷰
 
@@ -340,6 +326,8 @@ ERROR: Feature "Prezto" failed to install!
 - `release.yaml`의 `generate-docs`가 feature README를 덮어씁니다 (항목 C)
 - `validate.yml`이 `pull_request`와 `workflow_dispatch`에서만 돕니다. main에 직접 push할 때는 `devcontainer-feature.json` 검증이 없습니다
 - 새 feature를 추가할 때 매트릭스를 함께 고치도록 남길 장치가 있는지
+- `exclude`에서 `arm-gnu-toolchain` 2줄 제거. 이제 자기 의존성을 설치하므로 베어 이미지에서도 돕니다 (`prezto` 2줄은 항목 D 이후)
+- 테스트 실행을 [Makefile](Makefile) 타깃으로 바꿀지. 세 job의 명령이 `make unit-<feature>`, `make scenario-<feature>`, `make test-global`과 그대로 대응하므로, 로컬과 CI가 갈라지지 않고 위의 deprecated 위치 인자 문제도 함께 사라집니다
 
 ### F. `prezto` 시나리오 추가
 

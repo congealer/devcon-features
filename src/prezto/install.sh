@@ -32,7 +32,7 @@ fi
 echo ""
 echo "Git cloning Prezto into $prezto_dir"
 hash git 2>/dev/null && sudo -u $_REMOTE_USER git clone --recursive https://github.com/sorin-ionescu/prezto.git $prezto_dir || {
-  echo "git not installed"
+  echo "Failed to clone prezto into $prezto_dir"
   exit 1
 }
 

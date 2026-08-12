@@ -318,13 +318,3 @@ check "login shell is zsh" bash -c 'test "$(getent passwd "$(id -un)" | cut -d: 
 ```
 
 `chsh`는 `passwd` 패키지 소속이라 슬림 이미지에 없을 수 있어 `usermod -s` 폴백이 필요합니다.
-
-### H. `prezto` install.sh의 오진 메시지
-
-[install.sh](src/prezto/install.sh)가 `hash git && git clone ... || { echo "git not installed"; exit 1; }` 형태라, git이 설치돼 있어도 clone이 실패하면 "git not installed"를 출력합니다. 두 단계로 나눠야 구분됩니다.
-
-```bash
-hash git 2>/dev/null || { echo "git is not installed"; exit 1; }
-sudo -u $_REMOTE_USER git clone --recursive https://... "$prezto_dir" \
-    || { echo "failed to clone prezto into $prezto_dir"; exit 1; }
-```

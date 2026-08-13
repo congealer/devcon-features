@@ -46,4 +46,21 @@ check "~/.zshrc still links into .zprezto" bash -c "
 
 check "prezto still loads in an interactive zsh" bash -c 'zsh -i -c "whence -w pmodload" | grep -q "pmodload: function"'
 
+# The duplicate test feeds a string option from its 'proposals' rather than its
+# default, so extraZshrc arrives carrying the fzf line. install.sh appends it to
+# the runcom ~/.zshrc points at, wrapped in markers, dropping any block an
+# earlier pass left behind - which is the point: a second install must replace
+# the block rather than stack another one up.
+check "the extraZshrc block was replaced, not stacked" bash -c '
+    runcom="$HOME/.zprezto/runcoms/zshrc"
+    count=$(grep -c "^# >>> devcontainer extraZshrc >>>$" "$runcom")
+    [ "$count" = "1" ] || { echo "expected one marker block, found $count"; exit 1; }
+'
+
+# fzf is not on the image, but that only decides whether the line does anything
+# at shell start - it is written at install time either way.
+check "the runcom carries the proposed extraZshrc line" bash -c '
+    grep -qF "fzf --zsh" "$HOME/.zprezto/runcoms/zshrc"
+'
+
 reportResults

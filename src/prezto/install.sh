@@ -67,36 +67,56 @@ if [ "${SETZSHASDEFAULT:-true}" = "true" ]; then
   chsh -s "$(command -v zsh)" "$_REMOTE_USER"
 fi
 
+marker_begin="# >>> devcontainer extraZshrc >>>"
+marker_end="# <<< devcontainer extraZshrc <<<"
+
+# Not an early exit, so that the extraZshrc option below is honoured on an
+# image which already carries prezto.
 if [ -d $prezto_dir ]
 then
-  echo "Prezto already installed, exiting installation."
-  exit
+  echo "Prezto already installed, skipping the clone and the symlinks."
+else
+  echo ""
+  echo "Git cloning Prezto into $prezto_dir"
+  run_as_user git clone --recursive https://github.com/sorin-ionescu/prezto.git $prezto_dir || {
+    echo "Failed to clone prezto into $prezto_dir"
+    exit 1
+  }
+
+  echo ""
+  for rcfile in $(find "$_REMOTE_USER_HOME"/.zprezto/runcoms -type f -not -name "README.md"); do
+    dest="$_REMOTE_USER_HOME/.$(basename $rcfile)"
+    if [ -f $dest ] || [ -h $dest ]
+    then
+      backup="$dest.prezto_backup"
+      echo "Backing up $dest to $backup"
+      run_as_user mv $dest $backup
+    fi
+    echo "Linking $rcfile to $dest"
+    run_as_user ln -s -f $rcfile $dest
+  done
+
+  if [ -f "$(dirname $0)/zpreztorc" ]
+  then
+    run_as_user mv $_REMOTE_USER_HOME/.zprezto/runcoms/zpreztorc $_REMOTE_USER_HOME/.zprezto/runcoms/zpreztorc_org
+    run_as_user cp "$(dirname $0)/zpreztorc" $_REMOTE_USER_HOME/.zprezto/runcoms/zpreztorc
+  fi
 fi
 
-echo ""
-echo "Git cloning Prezto into $prezto_dir"
-run_as_user git clone --recursive https://github.com/sorin-ionescu/prezto.git $prezto_dir || {
-  echo "Failed to clone prezto into $prezto_dir"
-  exit 1
-}
-
-echo ""
-for rcfile in $(find "$_REMOTE_USER_HOME"/.zprezto/runcoms -type f -not -name "README.md"); do
-  dest="$_REMOTE_USER_HOME/.$(basename $rcfile)"
-  if [ -f $dest ] || [ -h $dest ]
-  then
-    backup="$dest.prezto_backup"
-    echo "Backing up $dest to $backup"
-    run_as_user mv $dest $backup
-  fi
-  echo "Linking $rcfile to $dest"
-  run_as_user ln -s -f $rcfile $dest
-done
-
-if [ -f "$(dirname $0)/zpreztorc" ]
+# ~/.zshrc is the symlink to this runcom, whose last line invites exactly this
+# ("Customize to your needs...").
+if [ -n "${EXTRAZSHRC:-}" ]
 then
-  run_as_user mv $_REMOTE_USER_HOME/.zprezto/runcoms/zpreztorc $_REMOTE_USER_HOME/.zprezto/runcoms/zpreztorc_org
-  run_as_user cp "$(dirname $0)/zpreztorc" $_REMOTE_USER_HOME/.zprezto/runcoms/zpreztorc
+  runcom="$prezto_dir/runcoms/zshrc"
+  echo "Appending the extra lines to $runcom"
+  # Drop the block an earlier run left behind, so that installing twice does
+  # not stack the same lines up.
+  run_as_user sed -i "/$marker_begin/,/$marker_end/d" "$runcom"
+  cat <<EOF | run_as_user tee -a "$runcom" > /dev/null
+$marker_begin
+$EXTRAZSHRC
+$marker_end
+EOF
 fi
 
 echo "Prezto is now installed. Login into, or reload zsh to activate."

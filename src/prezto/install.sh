@@ -2,6 +2,21 @@
 set -e
 
 USERNAME=$(id -un)
+
+# The CLI resolves _REMOTE_USER_HOME by looking the user up in the base image,
+# in a build step that runs before any Feature does. It therefore comes through
+# empty when an earlier Feature is the one that creates the user, as
+# common-utils does when given a 'username' that the image does not have. Look
+# it up again here, where /etc/passwd is current. 'installsAfter' is what makes
+# this lookup succeed.
+if [ -z "$_REMOTE_USER_HOME" ]; then
+  _REMOTE_USER_HOME=$(getent passwd "$_REMOTE_USER" | cut -d: -f6)
+fi
+[ -n "$_REMOTE_USER_HOME" ] || {
+  echo "Could not resolve the home directory of '$_REMOTE_USER'"
+  exit 1
+}
+
 prezto_dir="$_REMOTE_USER_HOME/.zprezto"
 echo "Install 'prezto' on $_REMOTE_USER_HOME"
 

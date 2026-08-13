@@ -152,11 +152,11 @@ devcontainer features test -p . -i mcr.microsoft.com/devcontainers/base:ubuntu
 | 컨테이너 | 설치되는 feature | 실행되는 스크립트 |
 |---|---|---|
 | 1개 | **모든 feature를 한꺼번에** | 각 feature의 `test.sh` 4개 |
-| 6개 (시나리오당 1개) | 각 시나리오의 `features` | 각 `<scenario>.sh` (`arm-gnu-toolchain` 2, `color` 3, `hello` 1) |
+| 7개 (시나리오당 1개) | 각 시나리오의 `features` | 각 `<scenario>.sh` (`arm-gnu-toolchain` 2, `color` 3, `hello` 1, `prezto` 1) |
 | 2개 | `duplicate.sh`가 있는 feature를 **두 번씩** (`arm-gnu-toolchain`, `prezto`) | `duplicate.sh` |
 | 1개 | 전역 시나리오가 지정 | `color_and_hello.sh` |
 
-컨테이너 10개가 만들어집니다. 주의할 점이 셋 있습니다.
+컨테이너 11개가 만들어집니다. 주의할 점이 셋 있습니다.
 
 - 첫 번째 컨테이너는 **모든 feature가 함께 설치된 환경**이므로, `-f`로 하나씩 돌릴 때와 조건이 다릅니다. feature 간 간섭 문제는 이때만 드러날 수 있습니다
 - `-i`를 생략하면 기본값 `ubuntu:focal`에 zsh가 없어 `prezto` 설치가 실패하고 빌드 자체가 멈춥니다
@@ -180,7 +180,7 @@ check "<라벨>" <명령> [인자...]
 reportResults
 ```
 
-기본 테스트에는 feature 옵션을 지정할 방법이 없습니다. 옵션별 동작이나 다른 feature와의 조합을 검증하려면 `scenarios.json`에 `devcontainer.json`을 직접 작성해야 합니다. 옵션이 없는 `prezto`에 `scenarios.json`이 없는 것도 이 때문입니다.
+기본 테스트에는 feature 옵션을 지정할 방법이 없습니다. 옵션별 동작이나 다른 feature와의 조합을 검증하려면 `scenarios.json`에 `devcontainer.json`을 직접 작성해야 합니다. `prezto`는 옵션이 없지만, common-utils가 만든 유저 위에서 도는지 확인하려고 시나리오를 두고 있습니다.
 
 #### 2. `set -e`를 쓰면 첫 실패에서 테스트 전체가 중단됩니다
 
@@ -288,53 +288,63 @@ Example Usage의 `:1`은 메이저 버전 태그입니다. publish하면 `1`, `1
 
 ### 0. `prezto` feature가 common-utils의 zsh / Oh My Zsh 역할을 대신하도록 (본래 목표)
 
-`prezto_zshrc` 브랜치를 연 이유입니다. 현재 `prezto` feature는 zsh가 이미 설치돼 있다고 가정하고 prezto만 clone하므로, common-utils의 `installZsh`/`installOhMyZsh`에 의존합니다. 그러다 보니 Oh My Zsh와 prezto가 한 컨테이너에 같이 설치되고, `~/.zshrc`는 prezto가 가져가면서 Oh My Zsh는 쓰이지 않은 채 남습니다.
+`prezto_zshrc` 브랜치를 연 이유입니다. 현재 `prezto` feature는 zsh가 이미 설치돼 있다고 가정하고 prezto만 clone하므로, common-utils에 의존합니다. 그러다 보니 Oh My Zsh와 prezto가 한 컨테이너에 같이 설치되고, `~/.zshrc`는 prezto가 가져가면서 Oh My Zsh는 쓰이지 않은 채 남습니다.
 
 목표는 `prezto` feature 하나로 zsh 설치부터 셸 설정까지 끝내고, common-utils 쪽은 `installOhMyZsh: false`로 끌 수 있게 하는 것입니다.
 
-**옵션 이름은 common-utils와 맞춥니다.** 참고로 common-utils의 관련 옵션은 다음과 같습니다.
+추가할 옵션은 하나입니다. **이름은 common-utils와 맞추되 기본값은 다릅니다.**
 
-| 옵션 | 타입 | 기본값 | 설명 |
-|---|---|---|---|
-| `installZsh` | boolean | `true` | Install ZSH? |
-| `configureZshAsDefaultShell` | boolean | `false` | Change default shell to ZSH? |
-| `installOhMyZsh` | boolean | `true` | Install Oh My Zsh!? |
-| `installOhMyZshConfig` | boolean | `true` | Allow installing the default dev container .zshrc templates? |
+| 옵션 | 타입 | 기본값 | common-utils | 설명 |
+|---|---|---|---|---|
+| `configureZshAsDefaultShell` | boolean | **`true`** | `false` | Change default shell to ZSH? |
 
-그래서 `prezto`에 둘 도입할 옵션은 `installZsh`와 `configureZshAsDefaultShell`이 됩니다. 아래 D(zsh 직접 설치)와 G(`chsh`)가 각각 이 두 옵션의 구현에 해당하므로, 별개 작업이 아니라 이 항목의 하위 작업으로 보는 것이 맞습니다.
+로그인 셸을 바꾸지 않으면 prezto를 설치해도 기본 셸은 그대로 bash라, 이 feature를 넣는 의미가 거의 없습니다.
 
-같이 정리할 것:
+**zsh 설치는 옵션으로 두지 않습니다.** prezto는 zsh 프레임워크라 zsh 없이는 성립하지 않으므로, `installZsh: false`는 깨진 설치를 만드는 값일 뿐입니다. 이미 zsh가 있으면 어차피 건너뛰므로 `true`도 고를 이유가 없습니다. `arm-gnu-toolchain`이 `curl`/`xz`를 옵션 없이 설치하는 것과 같은 형태로 둡니다.
 
-- `installsAfter`에 common-utils를 넣어(항목 B) common-utils가 먼저 돌게 하고, 그 위에서 prezto가 `~/.zshrc`를 가져가도록 순서를 명확히 합니다
-- 기존 `~/.zshrc`(Oh My Zsh가 만든 것)를 `.prezto_backup`으로 백업하는 현재 동작이 이 시나리오에서 맞는지 확인합니다
-- 문서에 common-utils와 함께 쓸 때 권장 설정(`installOhMyZsh: false`)을 적습니다
+#### zsh와 git을 직접 설치
 
----
-
-아래는 그 밖의 항목입니다. A~C는 이미 확인된 결함이고, D 이후는 개선 사항입니다.
-
-### B. `prezto`의 `installsAfter`가 비어 있음
-
-다른 세 feature는 `ghcr.io/devcontainers/features/common-utils`를 선언하는데 [src/prezto/devcontainer-feature.json](src/prezto/devcontainer-feature.json)만 `[]`입니다. zsh를 설치해 주는 것이 common-utils이므로 순서가 보장되지 않으면 zsh 없이 prezto가 먼저 실행될 수 있습니다.
-
-### D. `prezto`가 zsh를 직접 설치
-
-**선행 조건**: `install.sh`의 shebang이 `#!/usr/bin/env zsh`이므로 먼저 bash로 바꿔야 합니다. zsh가 없는 이미지에서는 스크립트 자체가 실행되지 않아 `apt-get install zsh` 줄까지 도달하지 못합니다.
+**선행 조건**: `install.sh`의 shebang이 `#!/usr/bin/env zsh`이므로 먼저 bash로 바꿔야 합니다. zsh가 없는 이미지에서는 스크립트 자체가 실행되지 않아 `apt-get install zsh` 줄까지 도달하지 못합니다. zsh 전용 문법은 쓰지 않으므로(40번 줄에 "Use find instead of zsh glob" 주석) 바꿔도 안전합니다.
 
 ```
 /usr/bin/env: 'zsh': No such file or directory
 ERROR: Feature "Prezto" failed to install!
 ```
 
-그 다음 없는 것만 설치합니다. 필요한 패키지는 `zsh`, `git`, `sudo`입니다.
+그 다음 `zsh`와 `git`이 없으면 설치합니다. `sudo`는 설치하지 않습니다. 대신 `sudo -u` 5곳을 루틴으로 묶어, 이미 대상 유저로 실행 중이면 건너뜁니다. 베어 이미지에는 sudo가 없고 그 환경에서는 `_REMOTE_USER`가 root라 애초에 필요가 없습니다.
+
+```bash
+if [ "$(id -un)" = "$_REMOTE_USER" ]; then
+    run_as_user() { "$@"; }
+else
+    run_as_user() { sudo -u "$_REMOTE_USER" "$@"; }
+fi
+```
 
 얻는 것:
 
 - 테스트 명령에서 `-i mcr.microsoft.com/devcontainers/base:ubuntu`가 필요 없어집니다
-- [test.yaml](.github/workflows/test.yaml)의 `exclude`에서 **prezto 관련 2줄**을 지울 수 있습니다
-- prezto가 맨 distro 이미지에서도 돌게 되어 **root로도 테스트됩니다.** 지금은 `base:*` 이미지만 쓰는데 그 이미지들이 `remoteUser: vscode`를 선언하므로 prezto는 항상 `vscode`로만 검증됩니다. `sudo -u $_REMOTE_USER`가 로직의 핵심인 feature인데 유저 하나에서만 검증되고 있습니다
+- [test.yaml](.github/workflows/test.yaml)의 `exclude` 2줄이 사라져 예외가 하나도 남지 않습니다
+- prezto가 맨 distro 이미지에서도 돌게 되어 **root로도 검증됩니다.** 지금은 `base:*` 이미지만 쓰는데 그 이미지들이 `remoteUser: vscode`를 선언하므로 항상 `vscode`로만 검증됩니다. `sudo -u $_REMOTE_USER`가 로직의 핵심인 feature인데 유저 하나에서만 검증되고 있습니다
 
-`arm-gnu-toolchain`은 이미 `curl`/`ca-certificates`/`xz-utils`를 스스로 설치하도록 고쳤고 `debian:latest`와 `ubuntu:latest`에서 통과를 확인했습니다. 남은 것은 `exclude`의 arm 2줄을 지우는 것뿐이며, 항목 E에 함께 적어두었습니다.
+#### `configureZshAsDefaultShell` — 로그인 셸을 zsh로
+
+`/etc/passwd` 항목만 보면 되므로 검증이 간단합니다.
+
+```bash
+check "login shell is zsh" bash -c 'test "$(getent passwd "$(id -un)" | cut -d: -f7)" = "$(which zsh)"'
+```
+
+`chsh`는 `passwd` 패키지 소속이라 슬림 이미지에 없을 수 있어 `usermod -s` 폴백이 필요합니다.
+
+#### 같이 정리할 것
+
+- 기존 `~/.zshrc`(Oh My Zsh가 만든 것)를 `.prezto_backup`으로 백업하는 현재 동작이 이 시나리오에서 맞는지 확인합니다
+- 문서에 common-utils와 함께 쓸 때 권장 설정(`installOhMyZsh: false`)을 적습니다
+
+---
+
+아래는 그 밖의 항목입니다.
 
 ### E. GitHub Actions 워크플로우 전반 리뷰
 
@@ -344,31 +354,7 @@ ERROR: Feature "Prezto" failed to install!
 
 - 테스트 명령이 deprecated된 위치 인자 형태입니다 (`... --skip-duplicated .`). 지금은 `.` 앞이 불리언 플래그라 정상 동작하지만 README는 `-p .`로 통일했습니다
 - `release.yaml`이 `workflow_dispatch` 전용입니다. 수동 실행만 되는 것이 의도인지
-- `release.yaml`의 `generate-docs`가 feature README를 덮어씁니다 (항목 C)
 - `validate.yml`이 `pull_request`와 `workflow_dispatch`에서만 돕니다. main에 직접 push할 때는 `devcontainer-feature.json` 검증이 없습니다
 - 새 feature를 추가할 때 매트릭스를 함께 고치도록 남길 장치가 있는지
-- `exclude`에서 `arm-gnu-toolchain` 2줄 제거. 이제 자기 의존성을 설치하므로 베어 이미지에서도 돕니다 (`prezto` 2줄은 항목 D 이후)
+- `exclude`에서 `arm-gnu-toolchain` 2줄 제거. 이제 자기 의존성을 설치하므로 베어 이미지에서도 돕니다 (`prezto` 2줄은 항목 0 이후)
 - 테스트 실행을 [Makefile](Makefile) 타깃으로 바꿀지. 세 job의 명령이 `make unit-<feature>`, `make scenario-<feature>`, `make test-global`과 그대로 대응하므로, 로컬과 CI가 갈라지지 않고 위의 deprecated 위치 인자 문제도 함께 사라집니다
-
-### F. `prezto` 시나리오 추가
-
-현재 prezto는 항상 base image 기본 remoteUser(`vscode`)에서만 테스트됩니다. `install.sh`의 핵심이 `sudo -u $_REMOTE_USER`인데 다른 유저에서 검증된 적이 없습니다. [test/color/scenarios.json](test/color/scenarios.json)의 `my_favorite_color_is_green`(common-utils + `remoteUser: octocat`)이 참고할 만한 형태입니다.
-
-부수 효과로 base image가 파일에 고정되고, `--skip-autogenerated` 조합에서 아무것도 검증하지 않은 채 통과하는 문제도 사라집니다.
-
-```
-🧪 Executing scenarios for feature 'prezto'...
-⚠️ No scenario file found at '.../test/prezto/scenarios.json'. Skipping...
-  ================== TEST REPORT ==================
-exit=0
-```
-
-### G. `prezto`에 `chsh` 옵션 추가
-
-로그인 셸을 zsh로 바꾸는 옵션입니다. 검증은 `/etc/passwd` 항목만 보면 되므로 간단합니다.
-
-```bash
-check "login shell is zsh" bash -c 'test "$(getent passwd "$(id -un)" | cut -d: -f7)" = "$(which zsh)"'
-```
-
-`chsh`는 `passwd` 패키지 소속이라 슬림 이미지에 없을 수 있어 `usermod -s` 폴백이 필요합니다.

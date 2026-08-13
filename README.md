@@ -282,17 +282,3 @@ feature 하나만 생성할 수는 없습니다. `generate-docs`에 feature를 �
 [release 워크플로우](.github/workflows/release.yaml)도 배포할 때 같은 문서를 만들어 PR로 올립니다. 미리 `make docs`를 돌려 커밋해 두면 그 PR이 비어 있게 됩니다.
 
 Example Usage의 `:1`은 메이저 버전 태그입니다. publish하면 `1`, `1.0`, `1.0.0`, `latest`가 함께 올라가므로 소비자는 `:1`로 호환되는 업데이트를 받거나 `:1.0.0`으로 완전히 고정할 수 있습니다.
-
-## TODO
-
-### E. GitHub Actions 워크플로우 전반 리뷰
-
-[test.yaml](.github/workflows/test.yaml), [release.yaml](.github/workflows/release.yaml), [validate.yml](.github/workflows/validate.yml) 세 파일 모두 `Initial commit`에 [devcontainers/feature-starter](https://github.com/devcontainers/feature-starter) 템플릿에서 그대로 들어온 뒤 검토된 적이 없습니다. 새 feature를 추가할 때 `test.yaml` 매트릭스를 갱신하지 않아 `prezto`와 `arm-gnu-toolchain`이 CI에서 빠져 있던 것도 그 결과입니다.
-
-확인할 것:
-
-- 테스트 명령이 deprecated된 위치 인자 형태입니다 (`... --skip-duplicated .`). 지금은 `.` 앞이 불리언 플래그라 정상 동작하지만 README는 `-p .`로 통일했습니다
-- `release.yaml`이 `workflow_dispatch` 전용입니다. 수동 실행만 되는 것이 의도인지
-- `validate.yml`이 `pull_request`와 `workflow_dispatch`에서만 돕니다. main에 직접 push할 때는 `devcontainer-feature.json` 검증이 없습니다
-- 새 feature를 추가할 때 매트릭스를 함께 고치도록 남길 장치가 있는지
-- 테스트 실행을 [Makefile](Makefile) 타깃으로 바꿀지. 세 job의 명령이 `make unit-<feature>`, `make scenario-<feature>`, `make test-global`과 그대로 대응하므로, 로컬과 CI가 갈라지지 않고 위의 deprecated 위치 인자 문제도 함께 사라집니다

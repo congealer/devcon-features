@@ -1,6 +1,9 @@
 #!/bin/bash
 
-set -e
+# Not 'set -e': a failing 'check' returns non-zero, which would abort the script
+# and skip every remaining check. 'check' collects failures and 'reportResults'
+# exits non-zero at the end, so the run is still reported as failed.
+set +e
 
 # Import test library
 source dev-container-features-test-lib

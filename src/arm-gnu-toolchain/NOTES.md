@@ -1,23 +1,3 @@
-
-# arm-gnu-toolchain (arm-gnu-toolchain)
-
-Install arm-gnu-toolchain for building ARM applications.
-
-## Example Usage
-
-```json
-"features": {
-    "ghcr.io/congealer/devcon-features/arm-gnu-toolchain:1": {}
-}
-```
-
-## Options
-
-| Options Id | Description | Type | Default Value |
-|-----|-----|-----|-----|
-| version | Version of the arm-gnu-toolchain to install. | string | 14.2.rel1 |
-| target | Target architecture for the toolchain. | string | aarch64-none-elf |
-
 ## 동작
 
 [developer.arm.com](https://developer.arm.com)에서 `version`과 `target`에 맞는 tarball을 받아 `/opt/gcc-arm`에 풀고, `/etc/profile.d/arm-gnu-toolchain.sh`로 `PATH`에 추가합니다. `curl`과 `xz`가 없는 이미지에서는 먼저 설치합니다.
@@ -42,8 +22,3 @@ make unit-arm-gnu-toolchain    # test.sh만
 ```bash
 devcontainer features publish --registry ghcr.io --namespace congealer/devcon-features ./src/arm-gnu-toolchain
 ```
-
-
----
-
-_Note: This file was auto-generated from the [devcontainer-feature.json](https://github.com/congealer/devcon-features/blob/main/src/arm-gnu-toolchain/devcontainer-feature.json).  Add additional notes to a `NOTES.md`._

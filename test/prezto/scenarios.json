@@ -1,0 +1,20 @@
+{
+    "with_common_utils": {
+        "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+        "features": {
+            "ghcr.io/devcontainers/features/common-utils:2": {
+                "username": "octocat"
+            },
+            "prezto": {}
+        },
+        "remoteUser": "octocat"
+    },
+    "keep_default_shell": {
+        "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+        "features": {
+            "prezto": {
+                "setZshAsDefault": false
+            }
+        }
+    }
+}

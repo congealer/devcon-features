@@ -1,7 +1,7 @@
 {
     "name": "arm-gnu-toolchain",
     "id": "arm-gnu-toolchain",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Install arm-gnu-toolchain for building ARM applications.",
     "options": {
         "version": {

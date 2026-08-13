@@ -1,22 +1,3 @@
-
-# Prezto (prezto)
-
-Install prezto, a configuration framework for zsh, in the remote user's home directory. Installs zsh and git when the base image does not already carry them.
-
-## Example Usage
-
-```json
-"features": {
-    "ghcr.io/congealer/devcon-features/prezto:1": {}
-}
-```
-
-## Options
-
-| Options Id | Description | Type | Default Value |
-|-----|-----|-----|-----|
-| setZshAsDefault | Change the remote user's login shell to zsh? | boolean | true |
-
 ## 동작
 
 [prezto](https://github.com/sorin-ionescu/prezto)의 [공식 설치 절차](https://github.com/sorin-ionescu/prezto#installation)를 그대로 따릅니다 — clone, `runcoms` 심볼릭 링크, `chsh`.
@@ -43,8 +24,3 @@ make unit-prezto    # test.sh만
 ```bash
 devcontainer features publish --registry ghcr.io --namespace congealer/devcon-features ./src/prezto
 ```
-
-
----
-
-_Note: This file was auto-generated from the [devcontainer-feature.json](https://github.com/congealer/devcon-features/blob/main/src/prezto/devcontainer-feature.json).  Add additional notes to a `NOTES.md`._

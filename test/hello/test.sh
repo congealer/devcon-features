@@ -30,7 +30,10 @@
 #                   --base-image mcr.microsoft.com/devcontainers/base:ubuntu \
 #                   /path/to/this/repo
 
-set -e
+# Not 'set -e': a failing 'check' returns non-zero, which would abort the script
+# and skip every remaining check. 'check' collects failures and 'reportResults'
+# exits non-zero at the end, so the run is still reported as failed.
+set +e
 
 # Optional: Import test library bundled with the devcontainer CLI
 # See https://github.com/devcontainers/cli/blob/HEAD/docs/features/test.md#dev-container-features-test-lib

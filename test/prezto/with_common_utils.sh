@@ -42,6 +42,11 @@ check "~/.zshrc links into .zprezto" bash -c '
     [ "$(readlink "$HOME/.zshrc")" = "$HOME/.zprezto/runcoms/zshrc" ]
 '
 
+check "login shell of the new user is zsh" bash -c '
+    shell=$(getent passwd "$(id -un)" | cut -d: -f7)
+    [ "$shell" = "$(command -v zsh)" ] || { echo "login shell is $shell"; exit 1; }
+'
+
 check "prezto loads in an interactive zsh" bash -c 'zsh -i -c "whence -w pmodload" | grep -q "pmodload: function"'
 
 reportResults

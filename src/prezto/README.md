@@ -1,7 +1,7 @@
 
 # Prezto (prezto)
 
-Install prezto on your home directory. You need to install zsh and git before using this feature.
+Install prezto, a configuration framework for zsh, in the remote user's home directory. Installs zsh and git when the base image does not already carry them.
 
 ## Example Usage
 
@@ -15,24 +15,26 @@ Install prezto on your home directory. You need to install zsh and git before us
 
 | Options Id | Description | Type | Default Value |
 |-----|-----|-----|-----|
-
+| setZshAsDefault | Change the remote user's login shell to zsh? | boolean | true |
 
 ## 동작
 
-`$_REMOTE_USER_HOME/.zprezto`에 prezto를 clone하고, `runcoms` 아래 파일들을 홈 디렉토리에 심볼릭 링크로 겁니다. 기존 `.zshrc` 등이 있으면 `.prezto_backup`으로 백업합니다.
+[prezto](https://github.com/sorin-ionescu/prezto)의 [공식 설치 절차](https://github.com/sorin-ionescu/prezto#installation)를 그대로 따릅니다 — clone, `runcoms` 심볼릭 링크, `chsh`.
 
-upstream `zpreztorc`는 `zpreztorc_org`로 보관하고 이 feature가 들고 있는 [zpreztorc](zpreztorc)로 교체합니다. 설정을 바꾸려면 그 파일을 고치면 됩니다.
+추가로 하는 일:
 
-이미 `~/.zprezto`가 있으면 아무것도 하지 않습니다.
+- 심볼릭 링크 자리에 있던 기존 파일은 `.prezto_backup`을 붙여 백업합니다. 공식 절차는 그냥 실패합니다
+- `zpreztorc`는 upstream 것 대신 이 feature가 들고 있는 [zpreztorc](zpreztorc)를 씁니다. 로드할 모듈이나 테마를 바꾸려면 그 파일을 고치면 됩니다
+- `~/.zprezto`가 이미 있으면 clone과 링크는 건너뜁니다. 로그인 셸 설정은 그대로 적용됩니다
 
 ## 개발 및 테스트
 
 ```bash
-make test-prezto    # test.sh + duplicate.sh
+make test-prezto    # test.sh + 시나리오 + duplicate.sh
 make unit-prezto    # test.sh만
 ```
 
-옵션이 없어 `scenarios.json`은 두지 않았습니다. 테스트 실행 방법과 작성 규칙은 저장소 루트의 [README](../../README.md#testing-features)를 참조하세요.
+테스트 실행 방법과 작성 규칙은 저장소 루트의 [README](../../README.md#testing-features)를 참조하세요.
 
 ## 배포
 

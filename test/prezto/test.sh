@@ -111,6 +111,15 @@ check "ZPREZTODIR points at ~/.zprezto" bash -c 'test "$(zsh -i -c "printf %s \$
 # The bundled zpreztorc loads the 'git' pmodule, which defines the 'git-info' function.
 check "pmodules from the bundled zpreztorc are loaded" bash -c 'zsh -i -c "whence -w git-info" | grep -q "git-info: function"'
 
+# ---------------------------------------------------------------------------
+# 5. setZshAsDefault defaults to true, so the login shell is zsh. The opposite
+#    is covered by the 'keep_default_shell' scenario.
+# ---------------------------------------------------------------------------
+check "login shell is zsh" bash -c '
+    shell=$(getent passwd "$(id -un)" | cut -d: -f7)
+    [ "$shell" = "$(command -v zsh)" ] || { echo "login shell is $shell"; exit 1; }
+'
+
 # Installing the Feature twice is covered separately, by duplicate.sh.
 
 # Report results

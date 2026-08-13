@@ -285,41 +285,6 @@ Example Usage의 `:1`은 메이저 버전 태그입니다. publish하면 `1`, `1
 
 ## TODO
 
-### 0. `prezto` feature가 common-utils의 zsh / Oh My Zsh 역할을 대신하도록 (본래 목표)
-
-`prezto_zshrc` 브랜치를 연 이유입니다. 현재 `prezto` feature는 zsh가 이미 설치돼 있다고 가정하고 prezto만 clone하므로, common-utils에 의존합니다. 그러다 보니 Oh My Zsh와 prezto가 한 컨테이너에 같이 설치되고, `~/.zshrc`는 prezto가 가져가면서 Oh My Zsh는 쓰이지 않은 채 남습니다.
-
-목표는 `prezto` feature 하나로 zsh 설치부터 셸 설정까지 끝내고, common-utils 쪽은 `installOhMyZsh: false`로 끌 수 있게 하는 것입니다.
-
-추가할 옵션은 하나입니다. **이름은 common-utils와 맞추되 기본값은 다릅니다.**
-
-| 옵션 | 타입 | 기본값 | common-utils | 설명 |
-|---|---|---|---|---|
-| `configureZshAsDefaultShell` | boolean | **`true`** | `false` | Change default shell to ZSH? |
-
-로그인 셸을 바꾸지 않으면 prezto를 설치해도 기본 셸은 그대로 bash라, 이 feature를 넣는 의미가 거의 없습니다.
-
-**zsh 설치는 옵션으로 두지 않습니다.** prezto는 zsh 프레임워크라 zsh 없이는 성립하지 않으므로, `installZsh: false`는 깨진 설치를 만드는 값일 뿐입니다. 이미 zsh가 있으면 어차피 건너뛰므로 `true`도 고를 이유가 없습니다. `arm-gnu-toolchain`이 `curl`/`xz`를 옵션 없이 설치하는 것과 같은 형태로 둡니다.
-
-#### `configureZshAsDefaultShell` — 로그인 셸을 zsh로
-
-`/etc/passwd` 항목만 보면 되므로 검증이 간단합니다.
-
-```bash
-check "login shell is zsh" bash -c 'test "$(getent passwd "$(id -un)" | cut -d: -f7)" = "$(which zsh)"'
-```
-
-`chsh`는 `passwd` 패키지 소속이라 슬림 이미지에 없을 수 있어 `usermod -s` 폴백이 필요합니다.
-
-#### 같이 정리할 것
-
-- 기존 `~/.zshrc`(Oh My Zsh가 만든 것)를 `.prezto_backup`으로 백업하는 현재 동작이 이 시나리오에서 맞는지 확인합니다
-- 문서에 common-utils와 함께 쓸 때 권장 설정(`installOhMyZsh: false`)을 적습니다
-
----
-
-아래는 그 밖의 항목입니다.
-
 ### E. GitHub Actions 워크플로우 전반 리뷰
 
 [test.yaml](.github/workflows/test.yaml), [release.yaml](.github/workflows/release.yaml), [validate.yml](.github/workflows/validate.yml) 세 파일 모두 `Initial commit`에 [devcontainers/feature-starter](https://github.com/devcontainers/feature-starter) 템플릿에서 그대로 들어온 뒤 검토된 적이 없습니다. 새 feature를 추가할 때 `test.yaml` 매트릭스를 갱신하지 않아 `prezto`와 `arm-gnu-toolchain`이 CI에서 빠져 있던 것도 그 결과입니다.

@@ -8,5 +8,13 @@
             "prezto": {}
         },
         "remoteUser": "octocat"
+    },
+    "keep_default_shell": {
+        "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+        "features": {
+            "prezto": {
+                "setZshAsDefault": false
+            }
+        }
     }
 }

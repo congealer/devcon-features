@@ -59,6 +59,14 @@ else
   run_as_user() { sudo -u "$_REMOTE_USER" "$@"; }
 fi
 
+# Applied before the early exit below, so that installing onto an image which
+# already carries prezto still honours the option. The CLI passes options
+# through as the option id in upper case.
+if [ "${SETZSHASDEFAULT:-true}" = "true" ]; then
+  echo "Setting zsh as the login shell for $_REMOTE_USER"
+  chsh -s "$(command -v zsh)" "$_REMOTE_USER"
+fi
+
 if [ -d $prezto_dir ]
 then
   echo "Prezto already installed, exiting installation."

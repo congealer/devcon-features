@@ -11,7 +11,7 @@
 {
     "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
     "features": {
-        "ghcr.io/devcontainers/feature-starter/hello:1": {
+        "ghcr.io/congealer/devcon-features/hello:1": {
             "greeting": "Hello"
         }
     }
@@ -256,6 +256,34 @@ reportResults
 
 `test.sh`와 겹치는 체크는 공용 파일로 뽑아 쓸 수 있습니다. **`test/<feature>/` 안의 파일은 전부 컨테이너로 복사되므로** `source ./_common.sh` 같은 방식이 동작합니다.
 
+## Feature 문서
+
+`src/<feature>/README.md`는 **자동 생성물입니다.** 직접 고치면 릴리스 때 덮어써집니다. 손으로 쓸 내용은 같은 디렉토리의 `NOTES.md`에 넣으세요.
+
+```
+# <name> (<id>)                     ← devcontainer-feature.json의 name, id
+<description>
+## Example Usage
+## Options                          ← options에서 생성한 표
+─────────────────────────────
+NOTES.md 내용이 여기 들어갑니다
+─────────────────────────────
+---
+_Note: This file was auto-generated from the devcontainer-feature.json..._
+```
+
+다시 생성하려면:
+
+```bash
+make docs
+```
+
+feature 하나만 생성할 수는 없습니다. `generate-docs`에 feature를 고르는 옵션이 없어서 `-p`에 준 디렉토리의 하위 전체를 훑습니다. 다만 생성이 결정적이라 내용이 바뀐 feature의 README에만 diff가 생깁니다.
+
+[release 워크플로우](.github/workflows/release.yaml)도 배포할 때 같은 문서를 만들어 PR로 올립니다. 미리 `make docs`를 돌려 커밋해 두면 그 PR이 비어 있게 됩니다.
+
+Example Usage의 `:1`은 메이저 버전 태그입니다. publish하면 `1`, `1.0`, `1.0.0`, `latest`가 함께 올라가므로 소비자는 `:1`로 호환되는 업데이트를 받거나 `:1.0.0`으로 완전히 고정할 수 있습니다.
+
 ## TODO
 
 ### 0. `prezto` feature가 common-utils의 zsh / Oh My Zsh 역할을 대신하도록 (본래 목표)
@@ -288,13 +316,6 @@ reportResults
 ### B. `prezto`의 `installsAfter`가 비어 있음
 
 다른 세 feature는 `ghcr.io/devcontainers/features/common-utils`를 선언하는데 [src/prezto/devcontainer-feature.json](src/prezto/devcontainer-feature.json)만 `[]`입니다. zsh를 설치해 주는 것이 common-utils이므로 순서가 보장되지 않으면 zsh 없이 prezto가 먼저 실행될 수 있습니다.
-
-### C. 문서 정리
-
-1. **`src/<feature>/README.md`는 릴리스 때 덮어써집니다.** [release.yaml](.github/workflows/release.yaml)의 `generate-docs: "true"`가 `devcontainer-feature.json`으로부터 README를 새로 생성하고 커밋합니다. 손으로 쓴 [src/prezto/README.md](src/prezto/README.md)와 [src/arm-gnu-toolchain/README.md](src/arm-gnu-toolchain/README.md)의 내용을 각 `NOTES.md`로 옮겨야 살아남습니다
-2. 옮길 때 **제목, 설명, Example Usage, 옵션 표는 삭제**합니다. 자동 생성되는 부분이라 그대로 두면 중복됩니다. `NOTES.md` 내용은 자동 생성 섹션 뒤, 푸터 앞에 삽입됩니다
-3. 그 안의 테스트 명령을 `-p .` 형식으로 통일합니다 (현재는 deprecated된 위치 인자 사용)
-4. [README.md](README.md)의 사용 예시가 `ghcr.io/devcontainers/feature-starter/hello:1`을 가리킵니다. 이 저장소가 아니라 upstream 템플릿 저장소이므로 그대로 따라 하면 다른 feature가 설치됩니다
 
 ### D. `prezto`가 zsh를 직접 설치
 

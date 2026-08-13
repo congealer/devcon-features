@@ -1,22 +1,3 @@
-
-# Prezto (prezto)
-
-Install prezto on your home directory. You need to install zsh and git before using this feature.
-
-## Example Usage
-
-```json
-"features": {
-    "ghcr.io/congealer/devcon-features/prezto:1": {}
-}
-```
-
-## Options
-
-| Options Id | Description | Type | Default Value |
-|-----|-----|-----|-----|
-
-
 ## 동작
 
 `$_REMOTE_USER_HOME/.zprezto`에 prezto를 clone하고, `runcoms` 아래 파일들을 홈 디렉토리에 심볼릭 링크로 겁니다. 기존 `.zshrc` 등이 있으면 `.prezto_backup`으로 백업합니다.
@@ -41,8 +22,3 @@ make unit-prezto    # test.sh만
 ```bash
 devcontainer features publish --registry ghcr.io --namespace congealer/devcon-features ./src/prezto
 ```
-
-
----
-
-_Note: This file was auto-generated from the [devcontainer-feature.json](https://github.com/congealer/devcon-features/blob/main/src/prezto/devcontainer-feature.json).  Add additional notes to a `NOTES.md`._

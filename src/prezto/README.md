@@ -16,6 +16,7 @@ Install prezto, a configuration framework for zsh, in the remote user's home dir
 | Options Id | Description | Type | Default Value |
 |-----|-----|-----|-----|
 | setZshAsDefault | Change the remote user's login shell to zsh? | boolean | true |
+| extraZshrc | Extra lines to run at the end of ~/.zshrc, for shell integrations such as 'source <(fzf --zsh)'. | string | - |
 
 ## 동작
 

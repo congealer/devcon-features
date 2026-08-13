@@ -24,18 +24,6 @@ jobs:
           - ubuntu:latest
           - mcr.microsoft.com/devcontainers/base:ubuntu
           - mcr.microsoft.com/devcontainers/base:debian
-        exclude:
-          # 'prezto' needs zsh (its install.sh has a zsh shebang), git and sudo;
-          # 'arm-gnu-toolchain' needs curl and xz. The bare distro images ship
-          # none of those, so both are limited to the devcontainers base images.
-          - features: prezto
-            baseImage: debian:latest
-          - features: prezto
-            baseImage: ubuntu:latest
-          - features: arm-gnu-toolchain
-            baseImage: debian:latest
-          - features: arm-gnu-toolchain
-            baseImage: ubuntu:latest
     steps:
       - uses: actions/checkout@v4
 

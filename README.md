@@ -156,10 +156,9 @@ devcontainer features test -p . -i mcr.microsoft.com/devcontainers/base:ubuntu
 | 2개 | `duplicate.sh`가 있는 feature를 **두 번씩** (`arm-gnu-toolchain`, `prezto`) | `duplicate.sh` |
 | 1개 | 전역 시나리오가 지정 | `color_and_hello.sh` |
 
-컨테이너 11개가 만들어집니다. 주의할 점이 셋 있습니다.
+컨테이너 11개가 만들어집니다. 주의할 점이 둘 있습니다.
 
 - 첫 번째 컨테이너는 **모든 feature가 함께 설치된 환경**이므로, `-f`로 하나씩 돌릴 때와 조건이 다릅니다. feature 간 간섭 문제는 이때만 드러날 수 있습니다
-- `-i`를 생략하면 기본값 `ubuntu:focal`에 zsh가 없어 `prezto` 설치가 실패하고 빌드 자체가 멈춥니다
 - 가장 오래 걸립니다. `arm-gnu-toolchain` 관련 컨테이너가 매번 수백 MB의 툴체인을 내려받습니다
 
 ### 피쳐 유닛 테스트 작성할 때 알아야 할 점
@@ -302,31 +301,6 @@ Example Usage의 `:1`은 메이저 버전 태그입니다. publish하면 `1`, `1
 
 **zsh 설치는 옵션으로 두지 않습니다.** prezto는 zsh 프레임워크라 zsh 없이는 성립하지 않으므로, `installZsh: false`는 깨진 설치를 만드는 값일 뿐입니다. 이미 zsh가 있으면 어차피 건너뛰므로 `true`도 고를 이유가 없습니다. `arm-gnu-toolchain`이 `curl`/`xz`를 옵션 없이 설치하는 것과 같은 형태로 둡니다.
 
-#### zsh와 git을 직접 설치
-
-**선행 조건**: `install.sh`의 shebang이 `#!/usr/bin/env zsh`이므로 먼저 bash로 바꿔야 합니다. zsh가 없는 이미지에서는 스크립트 자체가 실행되지 않아 `apt-get install zsh` 줄까지 도달하지 못합니다. zsh 전용 문법은 쓰지 않으므로(40번 줄에 "Use find instead of zsh glob" 주석) 바꿔도 안전합니다.
-
-```
-/usr/bin/env: 'zsh': No such file or directory
-ERROR: Feature "Prezto" failed to install!
-```
-
-그 다음 `zsh`와 `git`이 없으면 설치합니다. `sudo`는 설치하지 않습니다. 대신 `sudo -u` 5곳을 루틴으로 묶어, 이미 대상 유저로 실행 중이면 건너뜁니다. 베어 이미지에는 sudo가 없고 그 환경에서는 `_REMOTE_USER`가 root라 애초에 필요가 없습니다.
-
-```bash
-if [ "$(id -un)" = "$_REMOTE_USER" ]; then
-    run_as_user() { "$@"; }
-else
-    run_as_user() { sudo -u "$_REMOTE_USER" "$@"; }
-fi
-```
-
-얻는 것:
-
-- 테스트 명령에서 `-i mcr.microsoft.com/devcontainers/base:ubuntu`가 필요 없어집니다
-- [test.yaml](.github/workflows/test.yaml)의 `exclude` 2줄이 사라져 예외가 하나도 남지 않습니다
-- prezto가 맨 distro 이미지에서도 돌게 되어 **root로도 검증됩니다.** 지금은 `base:*` 이미지만 쓰는데 그 이미지들이 `remoteUser: vscode`를 선언하므로 항상 `vscode`로만 검증됩니다. `sudo -u $_REMOTE_USER`가 로직의 핵심인 feature인데 유저 하나에서만 검증되고 있습니다
-
 #### `configureZshAsDefaultShell` — 로그인 셸을 zsh로
 
 `/etc/passwd` 항목만 보면 되므로 검증이 간단합니다.
@@ -356,5 +330,4 @@ check "login shell is zsh" bash -c 'test "$(getent passwd "$(id -un)" | cut -d: 
 - `release.yaml`이 `workflow_dispatch` 전용입니다. 수동 실행만 되는 것이 의도인지
 - `validate.yml`이 `pull_request`와 `workflow_dispatch`에서만 돕니다. main에 직접 push할 때는 `devcontainer-feature.json` 검증이 없습니다
 - 새 feature를 추가할 때 매트릭스를 함께 고치도록 남길 장치가 있는지
-- `exclude`에서 `arm-gnu-toolchain` 2줄 제거. 이제 자기 의존성을 설치하므로 베어 이미지에서도 돕니다 (`prezto` 2줄은 항목 0 이후)
 - 테스트 실행을 [Makefile](Makefile) 타깃으로 바꿀지. 세 job의 명령이 `make unit-<feature>`, `make scenario-<feature>`, `make test-global`과 그대로 대응하므로, 로컬과 CI가 갈라지지 않고 위의 deprecated 위치 인자 문제도 함께 사라집니다

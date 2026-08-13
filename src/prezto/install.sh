@@ -1,4 +1,4 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 set -e
 
 USERNAME=$(id -un)
@@ -33,10 +33,31 @@ echo "The effective dev container containerUser is '$_CONTAINER_USER'"
 echo "The effective dev container containerUser's home directory is '$_CONTAINER_USER_HOME'"
 
 
-hash zsh 2>/dev/null || { 
-  echo "Zsh, isn't installed on your system, you're going to need to install that first."
-  exit 1
-}
+# prezto is a zsh framework, so zsh is not optional: install it when the image
+# does not already carry it. git is needed for the clone below.
+# 'ca-certificates' is only a Recommends of git, so with --no-install-recommends
+# the CA bundle never gets built and the clone below fails with "Problem with
+# the SSL CA cert". It is not a command, hence the file test.
+missing=""
+hash zsh 2>/dev/null || missing="$missing zsh"
+hash git 2>/dev/null || missing="$missing git"
+[ -f /etc/ssl/certs/ca-certificates.crt ] || missing="$missing ca-certificates"
+if [ -n "$missing" ]; then
+  echo "Installing:$missing"
+  export DEBIAN_FRONTEND=noninteractive
+  apt-get update
+  apt-get install -y --no-install-recommends $missing
+  rm -rf /var/lib/apt/lists/*
+fi
+
+# install.sh runs as root, so everything below has to be handed to the remote
+# user. On the bare distro images that user *is* root and sudo is not installed,
+# so only reach for sudo when the two actually differ.
+if [ "$(id -un)" = "$_REMOTE_USER" ]; then
+  run_as_user() { "$@"; }
+else
+  run_as_user() { sudo -u "$_REMOTE_USER" "$@"; }
+fi
 
 if [ -d $prezto_dir ]
 then
@@ -46,29 +67,28 @@ fi
 
 echo ""
 echo "Git cloning Prezto into $prezto_dir"
-hash git 2>/dev/null && sudo -u $_REMOTE_USER git clone --recursive https://github.com/sorin-ionescu/prezto.git $prezto_dir || {
+run_as_user git clone --recursive https://github.com/sorin-ionescu/prezto.git $prezto_dir || {
   echo "Failed to clone prezto into $prezto_dir"
   exit 1
 }
 
 echo ""
-# Use find instead of zsh glob
 for rcfile in $(find "$_REMOTE_USER_HOME"/.zprezto/runcoms -type f -not -name "README.md"); do
   dest="$_REMOTE_USER_HOME/.$(basename $rcfile)"
   if [ -f $dest ] || [ -h $dest ]
   then
     backup="$dest.prezto_backup"
     echo "Backing up $dest to $backup"
-    sudo -u $_REMOTE_USER mv $dest $backup
+    run_as_user mv $dest $backup
   fi
   echo "Linking $rcfile to $dest"
-  sudo -u $_REMOTE_USER ln -s -f $rcfile $dest
+  run_as_user ln -s -f $rcfile $dest
 done
 
 if [ -f "$(dirname $0)/zpreztorc" ]
 then
-  sudo -u $_REMOTE_USER mv $_REMOTE_USER_HOME/.zprezto/runcoms/zpreztorc $_REMOTE_USER_HOME/.zprezto/runcoms/zpreztorc_org
-  sudo -u $_REMOTE_USER cp "$(dirname $0)/zpreztorc" $_REMOTE_USER_HOME/.zprezto/runcoms/zpreztorc
+  run_as_user mv $_REMOTE_USER_HOME/.zprezto/runcoms/zpreztorc $_REMOTE_USER_HOME/.zprezto/runcoms/zpreztorc_org
+  run_as_user cp "$(dirname $0)/zpreztorc" $_REMOTE_USER_HOME/.zprezto/runcoms/zpreztorc
 fi
 
 echo "Prezto is now installed. Login into, or reload zsh to activate."

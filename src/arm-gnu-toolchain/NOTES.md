@@ -13,7 +13,7 @@ make test-arm-gnu-toolchain    # test.sh + 시나리오 2개 + duplicate.sh
 make unit-arm-gnu-toolchain    # test.sh만
 ```
 
-시나리오별 옵션은 [test/arm-gnu-toolchain/scenarios.json](../../test/arm-gnu-toolchain/scenarios.json)에서 관리합니다. 테스트 실행 방법과 작성 규칙은 저장소 루트의 [README](../../README.md#testing-features)를 참조하세요.
+시나리오별 옵션은 [test/arm-gnu-toolchain/scenarios.json](../../test/arm-gnu-toolchain/scenarios.json)에서 관리합니다. 테스트 실행 방법과 작성 규칙은 저장소 루트의 [CONTRIBUTING](../../CONTRIBUTING.md#testing-features)를 참조하세요.
 
 ## 배포
 

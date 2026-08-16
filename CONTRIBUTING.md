@@ -303,3 +303,22 @@ layers:      devcontainer-feature-<id>.tgz
 편집기가 이 값을 읽습니다. devcontainer.json에서 feature 위에 마우스를 올리면 이름·설명과 함께 이 링크가 뜹니다. 사용자가 실제로 문서에 닿는 경로는 GHCR 페이지가 아니라 이쪽입니다. [공식 feature 저장소](https://github.com/devcontainers/features)도 같은 방식을 씁니다.
 
 새 feature를 추가할 때 이 필드를 빠뜨리면 호버에 링크가 뜨지 않습니다.
+
+## 배포
+
+```bash
+make release
+```
+
+`src` 아래 feature 전체를 GHCR에 올립니다. **이미 배포된 버전은 CLI가 건너뛰므로**, 실제로 올라가는 것은 `devcontainer-feature.json`의 `version`을 올린 feature뿐입니다. 그것이 배포 여부를 정하는 유일한 스위치입니다.
+
+`gh auth token`으로 얻은 **개인 자격증명**을 씁니다. [release 워크플로우](.github/workflows/release.yaml)도 있지만 아직 활성화하지 않았습니다.
+
+### 태그가 움직입니다
+
+`1.3.0`을 올리면 `1.3.0`, `1.3`, `1`, `latest`가 함께 올라갑니다. 앞의 둘은 새로 생기지만 **`1`과 `latest`는 기존 것에서 옮겨옵니다.** `:1`로 고정한 사용자는 다음 빌드에서 바로 받게 되므로, 올리기 전에 테스트가 통과했는지 확인하세요.
+
+### 올리기 전에
+
+- 버전을 올렸는지 — 안 올리면 아무 일도 일어나지 않습니다
+- `make docs`를 돌리고 커밋했는지 — 문서는 배포되지 않지만, 저장소와 배포본의 설명이 어긋나면 나중에 추적이 어렵습니다

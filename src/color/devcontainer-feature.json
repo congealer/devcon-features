@@ -3,6 +3,7 @@
     "id": "color",
     "version": "1.0.3",
     "description": "A feature to remind you of your favorite color",
+    "documentationURL": "https://github.com/congealer/devcon-features/tree/main/src/color",
     "options": {
         "favorite": {
             "type": "string",

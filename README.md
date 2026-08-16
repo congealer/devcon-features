@@ -282,3 +282,24 @@ feature 하나만 생성할 수는 없습니다. `generate-docs`에 feature를 �
 [release 워크플로우](.github/workflows/release.yaml)도 배포할 때 같은 문서를 만들어 PR로 올립니다. 미리 `make docs`를 돌려 커밋해 두면 그 PR이 비어 있게 됩니다.
 
 Example Usage의 `:1`은 메이저 버전 태그입니다. publish하면 `1`, `1.0`, `1.0.0`, `latest`가 함께 올라가므로 소비자는 `:1`로 호환되는 업데이트를 받거나 `:1.0.0`으로 완전히 고정할 수 있습니다.
+
+### 이 문서를 사용자에게 보이는 방법
+
+`src/<feature>/README.md`는 **GHCR에 올라가지 않습니다.** 배포되는 것은 `install.sh` 등을 담은 tarball 하나와, `devcontainer-feature.json`을 그대로 직렬화한 매니페스트 annotation뿐입니다. README를 담을 자리가 없습니다.
+
+```
+annotations: dev.containers.metadata, com.github.package.type
+layers:      devcontainer-feature-<id>.tgz
+```
+
+그래서 GHCR 패키지 페이지에는 **이 저장소의 루트 README**가 대신 나옵니다. 패키지가 아니라 저장소에 딸린 것이라 네 feature가 모두 같은 화면을 보여주며, 바꿀 수단이 없습니다.
+
+대신 각 feature의 문서로 가는 길은 `documentationURL`입니다.
+
+```json
+"documentationURL": "https://github.com/congealer/devcon-features/tree/main/src/prezto"
+```
+
+편집기가 이 값을 읽습니다. devcontainer.json에서 feature 위에 마우스를 올리면 이름·설명과 함께 이 링크가 뜹니다. 사용자가 실제로 문서에 닿는 경로는 GHCR 페이지가 아니라 이쪽입니다. [공식 feature 저장소](https://github.com/devcontainers/features)도 같은 방식을 씁니다.
+
+새 feature를 추가할 때 이 필드를 빠뜨리면 호버에 링크가 뜨지 않습니다.

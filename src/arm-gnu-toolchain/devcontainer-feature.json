@@ -3,6 +3,7 @@
     "id": "arm-gnu-toolchain",
     "version": "1.1.0",
     "description": "Install arm-gnu-toolchain for building ARM applications.",
+    "documentationURL": "https://github.com/congealer/devcon-features/tree/main/src/arm-gnu-toolchain",
     "options": {
         "version": {
             "type": "string",

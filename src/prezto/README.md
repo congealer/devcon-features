@@ -35,7 +35,7 @@ make test-prezto    # test.sh + 시나리오 + duplicate.sh
 make unit-prezto    # test.sh만
 ```
 
-테스트 실행 방법과 작성 규칙은 저장소 루트의 [README](../../README.md#testing-features)를 참조하세요.
+테스트 실행 방법과 작성 규칙은 저장소 루트의 [CONTRIBUTING](../../CONTRIBUTING.md#testing-features)를 참조하세요.
 
 ## 배포
 

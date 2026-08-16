@@ -1,6 +1,6 @@
 ## 동작
 
-[developer.arm.com](https://developer.arm.com)에서 `version`과 `target`에 맞는 tarball을 받아 `/opt/gcc-arm`에 풀고, `/etc/profile.d/arm-gnu-toolchain.sh`로 `PATH`에 추가합니다. `curl`과 `xz`가 없는 이미지에서는 먼저 설치합니다.
+[developer.arm.com](https://developer.arm.com)에서 `version`과 `target`에 맞는 tarball을 받아 `/opt/gcc-arm`에 풀고, `containerEnv`로 `PATH`에 추가합니다. `curl`과 `xz`가 없는 이미지에서는 먼저 설치합니다.
 
 설치 경로는 `/opt/gcc-arm` 하나로 고정입니다. 요청한 버전이 이미 있으면 건너뛰고, 다른 버전이면 지운 뒤 새로 설치합니다. 따라서 **서로 다른 타깃을 동시에 설치할 수는 없습니다.**
 
@@ -13,7 +13,7 @@ make test-arm-gnu-toolchain    # test.sh + 시나리오 2개 + duplicate.sh
 make unit-arm-gnu-toolchain    # test.sh만
 ```
 
-시나리오별 옵션은 [test/arm-gnu-toolchain/scenarios.json](../../test/arm-gnu-toolchain/scenarios.json)에서 관리합니다. 테스트 실행 방법과 작성 규칙은 저장소 루트의 [README](../../README.md#testing-features)를 참조하세요.
+시나리오별 옵션은 [test/arm-gnu-toolchain/scenarios.json](../../test/arm-gnu-toolchain/scenarios.json)에서 관리합니다. 테스트 실행 방법과 작성 규칙은 저장소 루트의 [CONTRIBUTING](../../CONTRIBUTING.md#testing-features)를 참조하세요.
 
 ## 배포
 

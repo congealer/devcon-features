@@ -1,8 +1,9 @@
 {
     "name": "arm-gnu-toolchain",
     "id": "arm-gnu-toolchain",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "description": "Install arm-gnu-toolchain for building ARM applications.",
+    "documentationURL": "https://github.com/congealer/devcon-features/tree/main/src/arm-gnu-toolchain",
     "options": {
         "version": {
             "type": "string",
@@ -14,6 +15,9 @@
             "default": "aarch64-none-elf",
             "description": "Target architecture for the toolchain."
         }
+    },
+    "containerEnv": {
+        "PATH": "/opt/gcc-arm/bin:${PATH}"
     },
     "installsAfter": [
         "ghcr.io/devcontainers/features/common-utils"

@@ -19,8 +19,16 @@
     },
     "features": {
         "ghcr.io/devcontainers/features/docker-in-docker:2": {},
-        "ghcr.io/devcontainers/features/github-cli:1": {}
+        "ghcr.io/devcontainers/features/github-cli:1": {},
+        "ghcr.io/devcontainers-extra/features/fzf:1": {},
+        "ghcr.io/devcontainers/features/python:1": {
+            "installTools": false
+        }
     },
     "remoteUser": "node",
-    "updateContentCommand": "npm install -g @devcontainers/cli"
+    "updateContentCommand": "npm install -g @devcontainers/cli",
+    // The fzf Feature installs the binary only, so its key bindings and
+    // completion have to be wired into the shell here. questionary is what
+    // 'make prepare' asks its questions with.
+    "postCreateCommand": "pip install --break-system-packages questionary && echo 'eval \"$(fzf --bash)\"' >> ~/.bashrc"
 }

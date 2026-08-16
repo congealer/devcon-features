@@ -1,13 +1,9 @@
 {
-    "color_and_hello": {
+    "prezto_and_arm": {
         "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
         "features": {
-            "color": {
-                "favorite": "purple"
-            },
-            "hello": {
-                "greeting": "Greetings"
-            }
+            "arm-gnu-toolchain": {},
+            "prezto": {}
         }
     }
 }

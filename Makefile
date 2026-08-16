@@ -68,6 +68,21 @@ docs:  ## Regenerate every src/<feature>/README.md from its metadata and NOTES.m
 	    --github-owner $(word 1,$(subst /, ,$(NAMESPACE))) \
 	    --github-repo $(word 2,$(subst /, ,$(NAMESPACE)))
 
+prepare:  ## Pick a Feature and bump its version, then refresh the docs
+	@./prepare.py
+
+# Publishes with your own credentials rather than through the release
+# workflow. A version that is already published is skipped, so this uploads
+# whatever Feature had its version bumped and nothing else.
+#
+# Publishing 1.3.0 also moves the '1', '1.3' and 'latest' tags onto it, which
+# is what anyone pinned to ':1' picks up on their next build.
+release:  ## Publish every Feature under src/ to GHCR
+	@gh auth status > /dev/null 2>&1 \
+	    || { echo "gh is not logged in - run 'gh auth login'"; exit 1; }
+	GITHUB_TOKEN=$$(gh auth token) $(DEVCONTAINER) features publish \
+	    -r ghcr.io -n $(NAMESPACE) ./src
+
 clean:  ## Remove the containers, images and build cache the tests leave behind
 	@docker ps -a --format '{{.ID}} {{.Image}}' | grep -E ' vsc-[0-9]{10,}' \
 	    | cut -d' ' -f1 | xargs -r docker rm -f

@@ -10,8 +10,6 @@
 |---|---|
 | [prezto](src/prezto/) | zsh 설정 프레임워크 [prezto](https://github.com/sorin-ionescu/prezto)를 설치하고 로그인 셸을 zsh로 바꿉니다 |
 | [arm-gnu-toolchain](src/arm-gnu-toolchain/) | ARM 애플리케이션을 빌드하기 위한 arm-gnu-toolchain을 설치합니다 |
-| [color](src/color/) | 좋아하는 색을 알려줍니다 |
-| [hello](src/hello/) | hello world |
 
 **옵션과 동작은 각 feature의 링크를 보세요.** 이 표에는 요약만 둡니다.
 

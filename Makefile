@@ -68,6 +68,9 @@ docs:  ## Regenerate every src/<feature>/README.md from its metadata and NOTES.m
 	    --github-owner $(word 1,$(subst /, ,$(NAMESPACE))) \
 	    --github-repo $(word 2,$(subst /, ,$(NAMESPACE)))
 
+prepare:  ## Pick a Feature and bump its version, then refresh the docs
+	@./prepare.py
+
 # Publishes with your own credentials rather than through the release
 # workflow. A version that is already published is skipped, so this uploads
 # whatever Feature had its version bumped and nothing else.

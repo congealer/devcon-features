@@ -75,7 +75,8 @@ docs:  ## Regenerate every src/<feature>/README.md from its metadata and NOTES.m
 # Publishing 1.3.0 also moves the '1', '1.3' and 'latest' tags onto it, which
 # is what anyone pinned to ':1' picks up on their next build.
 release:  ## Publish every Feature under src/ to GHCR
-	@command -v gh > /dev/null || { echo "gh is not installed"; exit 1; }
+	@gh auth status > /dev/null 2>&1 \
+	    || { echo "gh is not logged in - run 'gh auth login'"; exit 1; }
 	GITHUB_TOKEN=$$(gh auth token) $(DEVCONTAINER) features publish \
 	    -r ghcr.io -n $(NAMESPACE) ./src
 

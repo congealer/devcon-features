@@ -59,7 +59,7 @@ else
     rm gcc-arm.tar.xz
 fi
 
-# Written on every run, with '>' rather than '>>', so that repeated installs
-# leave exactly one line.
-echo 'export PATH="/opt/gcc-arm/bin:$PATH"' > /etc/profile.d/arm-gnu-toolchain.sh
-chmod +x /etc/profile.d/arm-gnu-toolchain.sh
+# PATH is not set here. /etc/profile.d only reaches a login bash - zsh does not
+# read it, since Debian's /etc/zsh/zprofile is comments - so the entry is
+# declared as containerEnv in devcontainer-feature.json instead, which lands in
+# the container's environment and is inherited by every shell.

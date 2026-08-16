@@ -13,18 +13,16 @@ set +e
 
 source dev-container-features-test-lib
 
-PROFILE_D="/etc/profile.d/arm-gnu-toolchain.sh"
-
 ls -alh /opt/gcc-arm/bin
-cat "$PROFILE_D"
+echo "PATH: $PATH"
 
 check "toolchain is installed" bash -c "ls /opt/gcc-arm/bin/*-gcc >/dev/null 2>&1"
 
-# install.sh appends the PATH line with '>>', so a second install adds it again.
-check "PATH is exported only once" bash -c "
-    count=\$(grep -c 'gcc-arm/bin' '$PROFILE_D')
-    [ \"\$count\" -eq 1 ] || { echo \"PATH exported \$count times in $PROFILE_D\"; exit 1; }
-"
+# Not how many times: PATH is declared as containerEnv, so applying the Feature
+# twice leaves the entry twice, which costs nothing but cannot be avoided.
+check "PATH carries the toolchain" bash -c '
+    echo "$PATH" | tr : "\n" | grep -qx "/opt/gcc-arm/bin"
+'
 
 # Both installs extract into the same /opt/gcc-arm, so two different versions
 # cannot coexist: the second one lands on top of the first.

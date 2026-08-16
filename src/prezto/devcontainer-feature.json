@@ -1,7 +1,7 @@
 {
     "name": "Prezto",
     "id": "prezto",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "description": "Install prezto, a configuration framework for zsh, in the remote user's home directory. Installs zsh and git when the base image does not already carry them.",
     "documentationURL": "https://github.com/congealer/devcon-features/tree/main/src/prezto",
     "options": {

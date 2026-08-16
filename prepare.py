@@ -18,7 +18,7 @@ try:
 except ImportError:
     sys.exit("questionary is not installed - rebuild the dev container")
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parent
 
 
 def metadata(feature):
@@ -39,6 +39,37 @@ def candidates(version):
     )
 
 
+def git(*args):
+    done = subprocess.run(
+        ["git", *args], cwd=ROOT, capture_output=True, text=True, check=False
+    )
+    return done.stdout.strip()
+
+
+def state(feature, version):
+    """Whether the Feature has moved on since its version was last set.
+
+    The commit that introduced the current version string is the mark: anything
+    touching the Feature after it is work the published version does not carry.
+    'make prepare' writes the version and leaves the commit to you, so a version
+    that is not in the history at all is its own answer.
+    """
+    if git("status", "--porcelain", "--", f"src/{feature}"):
+        return "bumped, uncommitted"
+
+    mark = git(
+        "log", "-1", "--format=%H",
+        "-S", f'"version": "{version}"',
+        "--", f"src/{feature}/devcontainer-feature.json",
+    )
+    if not mark:
+        return "version never committed"
+
+    if git("log", "--oneline", f"{mark}..HEAD", "--", f"src/{feature}"):
+        return "changed"
+    return ""
+
+
 def write_version(feature, version):
     """Rewrite the version alone, leaving the rest of the file's order intact."""
     path = metadata(feature)
@@ -52,13 +83,21 @@ def main():
     if not features:
         sys.exit("no Features under src/")
 
-    chosen = questionary.checkbox(
-        "Features to bump",
-        choices=[
-            questionary.Choice(f"{f}  ({current_version(f)})", value=f)
-            for f in features
-        ],
-    ).ask()
+    # Pre-checked is the point: the ones carrying changes are the ones that
+    # have to go up, and a release that misses one is the failure worth avoiding.
+    choices = []
+    for f in features:
+        version = current_version(f)
+        note = state(f, version)
+        choices.append(
+            questionary.Choice(
+                f"{f}  ({version})" + (f"  - {note}" if note else ""),
+                value=f,
+                checked=note == "changed",
+            )
+        )
+
+    chosen = questionary.checkbox("Features to bump", choices=choices).ask()
     if not chosen:
         sys.exit("nothing picked")
 

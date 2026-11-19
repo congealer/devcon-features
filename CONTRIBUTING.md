@@ -29,6 +29,17 @@ make test-prezto BASE_IMAGE=mcr.microsoft.com/devcontainers/base:debian
 make test REMOTE_USER=octocat
 ```
 
+#### 테스트 이미지
+
+기본 테스트(`test.sh`, `duplicate.sh`)를 어떤 이미지에서 돌릴지는 Makefile에 정해 둡니다. CI도 같은 목록을 씁니다(`make ci-matrix`가 feature와 이미지 조합을 만들어 줍니다).
+
+| 변수 | 지금 값 | 쓰이는 곳 |
+|---|---|---|
+| `TEST_IMAGES` | `mcr.microsoft.com/devcontainers/base:ubuntu`, `mcr.microsoft.com/devcontainers/base:debian`, `debian:latest` | 모든 feature의 기본 목록입니다. CI는 목록 전체에서, 로컬 `make unit-*`와 `make test-*`는 첫 번째 이미지에서 돌립니다 |
+| `TEST_IMAGES_<feature>` | 없음 | 기본 목록에서 돌 수 없는 feature만 둡니다. 있으면 기본 목록 대신 씁니다 |
+
+`BASE_IMAGE`를 주면 위 값 대신 그 이미지를 씁니다.
+
 #### 테스트가 남긴 것 정리
 
 테스트는 컨테이너를 지우지만 **이미지와 빌드 캐시는 남깁니다.** 몇 번만 돌려도 수 GB가 쌓입니다.

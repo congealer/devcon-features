@@ -52,7 +52,7 @@ test-%:  ## One feature: test.sh, its scenarios and duplicate.sh
 	$(call require-feature,$*)
 	$(TEST) -f $* -i $(BASE_IMAGE) $(USER_OPT)
 
-unit-%:  ## One feature: test.sh only
+unit-%:  ## One feature: test.sh and duplicate.sh, no scenarios
 	$(call require-feature,$*)
 	$(TEST) -f $* -i $(BASE_IMAGE) $(USER_OPT) --skip-scenarios
 
@@ -62,7 +62,7 @@ scenario-%:  ## One feature: its scenarios only
 
 # '-p' wants the directory the Features live *in*, not the project root the
 # other commands take. There is no way to regenerate a single Feature: whatever
-# is passed to '-p' is scanned for children, so this always rewrites all four.
+# is passed to '-p' is scanned for children, so this always rewrites all of them.
 docs:  ## Regenerate every src/<feature>/README.md from its metadata and NOTES.md
 	$(DEVCONTAINER) features generate-docs -p src -n $(NAMESPACE) \
 	    --github-owner $(word 1,$(subst /, ,$(NAMESPACE))) \

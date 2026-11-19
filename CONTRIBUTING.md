@@ -13,7 +13,7 @@
 | make 타깃 | 실행 내용 |
 |---|---|
 | `make test-<feature>` | 해당 feature 전체 (`test.sh` + 시나리오 + `duplicate.sh`) |
-| `make unit-<feature>` | 해당 feature의 `test.sh`만 |
+| `make unit-<feature>` | 해당 feature의 `test.sh`와 `duplicate.sh` (시나리오 제외) |
 | `make scenario-<feature>` | 해당 feature의 시나리오만 |
 | `make test-global` | 전역 시나리오만 |
 | `make test` | 저장소 전체 |
@@ -75,6 +75,7 @@ ENOENT: no such file or directory, open '.../.devcontainer/devcontainer-feature.
 | `--global-scenarios-only` | `test/_global/`의 시나리오만 실행. `-f`와 함께 쓸 수 없음 |
 | `--filter <문자열>` | 이름에 해당 문자열이 포함된 시나리오만 실행 |
 | `--preserve-test-containers` | 실행 후 컨테이너를 남겨둠 (디버깅용) |
+| `--permit-randomization` | duplicate 테스트의 두 번째 옵션을 목록에서 무작위로 고름 ([5번](#5-duplicatesh--두-번-설치해도-괜찮은지-검증합니다) 참고) |
 
 `-i`와 `-u`는 **기본 테스트에만 적용됩니다** (`--help`의 표현은 "Not used for scenarios"). 시나리오는 `scenarios.json`에 적힌 `image`/`remoteUser`를 사용합니다.
 
@@ -93,10 +94,11 @@ devcontainer features test -p . -f prezto -i mcr.microsoft.com/devcontainers/bas
 |---|---|---|
 | 1개 | `prezto` | `test.sh` |
 | 2개 (시나리오당 1개) | 각 시나리오의 `features` | `with_common_utils.sh`, `keep_default_shell.sh` |
+| 1개 | `prezto`를 두 번 | `duplicate.sh` |
 
 `test/_global/`의 전역 시나리오는 실행되지 않습니다. 특정 feature에 속하지 않기 때문입니다.
 
-**2. 특정 feature의 기본 테스트만**
+**2. 특정 feature의 기본 테스트와 `duplicate.sh`**
 ```bash
 devcontainer features test -p . -f prezto --skip-scenarios -i mcr.microsoft.com/devcontainers/base:ubuntu
 ```
@@ -104,8 +106,9 @@ devcontainer features test -p . -f prezto --skip-scenarios -i mcr.microsoft.com/
 | 컨테이너 | 설치되는 feature | 실행되는 스크립트 |
 |---|---|---|
 | 1개 | `prezto` | `test.sh` |
+| 1개 | `prezto`를 두 번 | `duplicate.sh` |
 
-`-i`와 `-u`는 이 컨테이너에만 적용됩니다.
+`--skip-scenarios`는 시나리오만 빼므로 `duplicate.sh`는 그대로 실행됩니다. `-i`와 `-u`는 이 두 컨테이너에만 적용됩니다.
 
 **3. 특정 feature의 시나리오만**
 ```bash
@@ -211,11 +214,56 @@ check "no files owned by another user" bash -c '
 
 #### 5. `duplicate.sh` — 두 번 설치해도 괜찮은지 검증합니다
 
-`test/<feature>/duplicate.sh`를 두면 CLI가 **같은 feature를 두 번 선언한** `devcontainer.json`을 만들어 컨테이너를 빌드하고 그 안에서 이 스크립트를 실행합니다. [공식 문서](https://github.com/devcontainers/cli/blob/main/docs/features/test.md)의 설명입니다.
+`test/<feature>/duplicate.sh`를 두면 CLI가 feature를 **두 번 설치한** 컨테이너를 만들고 그 안에서 이 스크립트를 실행합니다. [공식 문서](https://github.com/devcontainers/cli/blob/main/docs/features/test.md)의 설명입니다.
 
 > each Feature with a `duplicate.sh` will generate a test installing a given Feature twice (with different options). This is useful for asserting that a Feature can be installed multiple times without conflict (is idempotent).
 
-옵션이 없는 feature에도 동작하며, 결과에는 `<feature> executed twice with randomized options`로 표시됩니다. 파일을 두지 않으면 조용히 건너뜁니다.
+"with different options"가 실제로 무엇을 뜻하는지는 문서에 없습니다. 아래는 CLI(0.90.0) 소스와 실행 결과로 확인한 동작입니다.
+
+##### 두 번 설치하는 방법
+
+CLI가 `src/<feature>`를 **서로 다른 두 폴더로 복사**하고, 두 경로를 각각 feature로 선언한 `devcontainer.json`을 만듭니다. 이미지는 기본 테스트와 같이 `-i`로 준 것을 씁니다.
+
+```json
+"features": {
+    "./<feature>":   { "<option>": "<CLI가 고른 값>" },
+    "./<feature>-0": {}
+}
+```
+
+- `./<feature>-0`: 옵션 없음. 모든 옵션이 기본값입니다
+- `./<feature>`: CLI가 아래 규칙으로 고른 옵션입니다
+
+스펙상 로컬 feature는 다른 어떤 로컬 feature와도 같은 것으로 보지 않으므로, 두 폴더는 합쳐지지 않고 각각 설치됩니다. 빌드 로그에 `<feature>_0`, `<feature>_1` 두 단계로 나옵니다.
+
+**테스트 작성자는 두 사본의 옵션을 지정할 수 없습니다.** `scenarios.json` 같은 설정 파일이 없고, CLI가 feature의 옵션 정의(`devcontainer-feature.json`)만 보고 정합니다.
+
+##### 두 번째 사본의 옵션을 고르는 규칙
+
+| 옵션 정의 | `./<feature>`에 들어가는 값 |
+|---|---|
+| `boolean` | 기본값의 반대 |
+| `string` + `enum` | `enum` 목록에서 고른 값 |
+| `string` + `proposals` | `proposals` 목록에서 고른 값 |
+| 그 밖의 `string` | 넣지 않음. 결과적으로 기본값 |
+
+`enum`과 `proposals`는 둘 다 `string` 옵션에 붙이는 값 목록입니다.
+
+- `enum`: 허용되는 값의 목록입니다. 사용자는 목록 밖의 값을 쓸 수 없습니다
+- `proposals`: 추천 값의 목록입니다. 사용자는 목록 밖의 값도 쓸 수 있고, 편집기는 이 목록을 자동완성 후보로 보여줍니다
+
+duplicate 테스트에서 목록을 다루는 방식은 둘이 같습니다.
+
+- **기본**: 목록의 맨 앞 값을 고릅니다. 그 값이 기본값이면 다음 값을 고릅니다
+- **`--permit-randomization`을 줬을 때**: 목록에서 무작위로 고릅니다. 뽑힌 값이 기본값이면 다음 값을 고릅니다
+
+"다음 값"은 목록 끝에서 맨 앞으로 돌아갑니다. Makefile 타깃은 `--permit-randomization`을 쓰지 않으므로 같은 정의에서는 매번 같은 값이 골라집니다.
+
+결과에는 `<feature> executed twice with randomized options`로 표시되지만, **`boolean`도 `enum`도 `proposals`도 없는 feature는 두 사본이 모두 기본값으로 설치됩니다.** 이 경우 `duplicate.sh`는 "같은 옵션으로 두 번 설치해도 괜찮은가"를 검증하게 됩니다. 이 저장소의 feature가 지금 모두 그렇습니다(`prezto`는 옵션이 없고, `arm-gnu-toolchain`은 목록 없는 `string`뿐입니다).
+
+옵션 정의는 릴리즈되는 메타데이터입니다. 테스트를 위해 `enum`이나 `proposals`를 넣지 마세요. `proposals`는 사용자의 편집기에 추천값으로 그대로 노출됩니다.
+
+옵션이 없는 feature에도 동작합니다. 파일을 두지 않으면 조용히 건너뜁니다.
 
 작성 방법은 `test.sh`와 같습니다. 다른 점은 **검증 대상이 "두 번 설치된 뒤의 상태"**라는 것뿐입니다. `install.sh`를 직접 다시 호출할 필요가 없습니다. 컨테이너가 이미 그 상태입니다.
 
@@ -277,7 +325,7 @@ annotations: dev.containers.metadata, com.github.package.type
 layers:      devcontainer-feature-<id>.tgz
 ```
 
-그래서 GHCR 패키지 페이지에는 **이 저장소의 루트 README**가 대신 나옵니다. 패키지가 아니라 저장소에 딸린 것이라 네 feature가 모두 같은 화면을 보여주며, 바꿀 수단이 없습니다.
+그래서 GHCR 패키지 페이지에는 **이 저장소의 루트 README**가 대신 나옵니다. 패키지가 아니라 저장소에 딸린 것이라 모든 feature가 같은 화면을 보여주며, 바꿀 수단이 없습니다.
 
 대신 각 feature의 문서로 가는 길은 `documentationURL`입니다.
 

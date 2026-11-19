@@ -1,0 +1,17 @@
+{
+    "name": "pip-packages",
+    "id": "pip-packages",
+    "version": "1.2.0",
+    "description": "Install pip packages with the Python interpreter already in the container (from the Python feature or a Python image), into its system site-packages rather than a venv or pipx. Also registers libpython with the dynamic linker when it cannot be found, so programs embedding Python (e.g. simulators loading cocotb) can load it.",
+    "documentationURL": "https://github.com/congealer/devcon-features/tree/main/src/pip-packages",
+    "options": {
+        "packages": {
+            "type": "string",
+            "default": "",
+            "description": "pip requirement specifiers, comma- or space-separated, e.g. 'cocotb==1.6.2,doit'. Empty installs nothing."
+        }
+    },
+    "installsAfter": [
+        "ghcr.io/devcontainers/features/python"
+    ]
+}

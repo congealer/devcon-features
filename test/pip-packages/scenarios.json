@@ -1,0 +1,47 @@
+{
+    "python_image": {
+        "image": "mcr.microsoft.com/devcontainers/python",
+        "features": {
+            "pip-packages": {
+                "packages": "packaging==24.1,requests[socks],cowsay"
+            }
+        }
+    },
+    "two_pythons": {
+        "image": "mcr.microsoft.com/devcontainers/python",
+        "features": {
+            "ghcr.io/devcontainers/features/python:1": {
+                "version": "3.12",
+                "installTools": false,
+                "enableShared": true
+            },
+            "pip-packages": {
+                "packages": "packaging==24.1 cowsay"
+            }
+        }
+    },
+    "shared": {
+        "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+        "features": {
+            "ghcr.io/devcontainers/features/python:1": {
+                "version": "3.12",
+                "installTools": false,
+                "enableShared": true
+            },
+            "pip-packages": {
+                "packages": "packaging==24.1,requests[socks],cowsay"
+            }
+        }
+    },
+    "no_packages": {
+        "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+        "features": {
+            "ghcr.io/devcontainers/features/python:1": {
+                "version": "3.12",
+                "installTools": false,
+                "enableShared": true
+            },
+            "pip-packages": {}
+        }
+    }
+}

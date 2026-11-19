@@ -24,13 +24,22 @@ USER_OPT := $(if $(REMOTE_USER),-u $(REMOTE_USER),)
 TEST_IMAGES := mcr.microsoft.com/devcontainers/base:ubuntu \
 	mcr.microsoft.com/devcontainers/base:debian \
 	debian:latest
+TEST_IMAGES_pip-packages := mcr.microsoft.com/devcontainers/python
 
 test-images = $(or $(TEST_IMAGES_$(1)),$(TEST_IMAGES))
 image-for   = $(or $(BASE_IMAGE),$(firstword $(call test-images,$(1))))
 
+# The image 'make test' runs on. That run installs every Feature into one
+# container together, which is the only place they meet without a scenario
+# naming them. It takes a single '-i', so it cannot use each Feature's own
+# TEST_IMAGES, and the generated config holds only the Features under src/, so
+# there is no way to add the Python feature that pip-packages needs. An image
+# with Python already in it is what lets every Feature in.
+TEST_IMAGE_ALL := mcr.microsoft.com/devcontainers/python
+
 # Every base image above, which the scenarios also draw from. Removed by
 # 'distclean' only, since re-pulling them is slow.
-BASE_IMAGES := $(sort $(TEST_IMAGES) $(foreach f,$(FEATURES),$(TEST_IMAGES_$(f))))
+BASE_IMAGES := $(sort $(TEST_IMAGES) $(TEST_IMAGE_ALL) $(foreach f,$(FEATURES),$(TEST_IMAGES_$(f))))
 
 # Images left behind by a test run. They are named vsc-<timestamp>-<sha>-features
 # and the CLI never removes them. Matching on the timestamp is what keeps this
@@ -54,7 +63,7 @@ help:  ## Show this help
 	@echo "BASE_IMAGE: $(or $(BASE_IMAGE),(each feature's first TEST_IMAGES))"
 
 test:  ## Every feature, its scenarios, and the global scenarios
-	$(TEST) -i $(or $(BASE_IMAGE),$(firstword $(TEST_IMAGES))) $(USER_OPT)
+	$(TEST) -i $(or $(BASE_IMAGE),$(TEST_IMAGE_ALL)) $(USER_OPT)
 
 # An explicit rule wins over a pattern rule in GNU make, so this is not
 # swallowed by 'test-%' below.

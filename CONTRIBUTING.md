@@ -36,9 +36,12 @@ make test REMOTE_USER=octocat
 | 변수 | 지금 값 | 쓰이는 곳 |
 |---|---|---|
 | `TEST_IMAGES` | `mcr.microsoft.com/devcontainers/base:ubuntu`, `mcr.microsoft.com/devcontainers/base:debian`, `debian:latest` | 모든 feature의 기본 목록입니다. CI는 목록 전체에서, 로컬 `make unit-*`와 `make test-*`는 첫 번째 이미지에서 돌립니다 |
-| `TEST_IMAGES_<feature>` | 없음 | 기본 목록에서 돌 수 없는 feature만 둡니다. 있으면 기본 목록 대신 씁니다 |
+| `TEST_IMAGES_<feature>` | `pip-packages`만 있음: `mcr.microsoft.com/devcontainers/python` | 기본 목록에서 돌 수 없는 feature만 둡니다. 있으면 기본 목록 대신 씁니다 |
+| `TEST_IMAGE_ALL` | `mcr.microsoft.com/devcontainers/python` | `make test` |
 
 `BASE_IMAGE`를 주면 위 값 대신 그 이미지를 씁니다.
+
+`make test`만 Python 이미지를 쓰는 이유는 이렇습니다. `make test`는 모든 feature를 한 컨테이너에 함께 설치하는데, 이때 CLI가 만드는 설정에는 `src/` 아래 feature만 들어가서 Python feature를 끼워 넣을 수 없습니다. `pip-packages`는 Python이 있어야 설치되므로 Python이 들어 있는 이미지를 씁니다.
 
 #### 테스트가 남긴 것 정리
 
@@ -143,22 +146,22 @@ devcontainer features test -p . --global-scenarios-only
 
 `-f`와 함께 쓸 수 없습니다.
 
-**5. 저장소 전체**
+**5. 저장소 전체** (`make test`와 같음)
 ```bash
-devcontainer features test -p . -i mcr.microsoft.com/devcontainers/base:ubuntu
+devcontainer features test -p . -i mcr.microsoft.com/devcontainers/python
 ```
 
 | 컨테이너 | 설치되는 feature | 실행되는 스크립트 |
 |---|---|---|
-| 1개 | **모든 feature를 한꺼번에** | 각 feature의 `test.sh` 2개 |
-| 4개 (시나리오당 1개) | 각 시나리오의 `features` | 각 `<scenario>.sh` (`arm-gnu-toolchain` 2, `prezto` 2) |
-| 2개 | `duplicate.sh`가 있는 feature를 **두 번씩** (`arm-gnu-toolchain`, `prezto`) | `duplicate.sh` |
+| 1개 | **모든 feature를 한꺼번에** | 각 feature의 `test.sh` 3개 |
+| 9개 (시나리오당 1개) | 각 시나리오의 `features` | 각 `<scenario>.sh` (`arm-gnu-toolchain` 2, `pip-packages` 5, `prezto` 2) |
+| 3개 | `duplicate.sh`가 있는 feature를 **두 번씩** (`arm-gnu-toolchain`, `pip-packages`, `prezto`) | `duplicate.sh` |
 | 1개 | 전역 시나리오가 지정 | `prezto_and_arm.sh` |
 
-컨테이너 8개가 만들어집니다. 주의할 점이 둘 있습니다.
+컨테이너 14개가 만들어집니다. 주의할 점이 둘 있습니다.
 
 - 첫 번째 컨테이너는 **모든 feature가 함께 설치된 환경**이므로, `-f`로 하나씩 돌릴 때와 조건이 다릅니다. feature 간 간섭 문제는 이때만 드러날 수 있습니다
-- 가장 오래 걸립니다. `arm-gnu-toolchain` 관련 컨테이너가 매번 수백 MB의 툴체인을 내려받습니다
+- 가장 오래 걸립니다. `arm-gnu-toolchain` 관련 컨테이너는 매번 수백 MB의 툴체인을 내려받고, `pip-packages`의 시나리오 중 Python feature를 쓰는 것은 Python을 소스에서 빌드합니다
 
 ### 피쳐 유닛 테스트 작성할 때 알아야 할 점
 
@@ -270,7 +273,7 @@ duplicate 테스트에서 목록을 다루는 방식은 둘이 같습니다.
 
 "다음 값"은 목록 끝에서 맨 앞으로 돌아갑니다. Makefile 타깃은 `--permit-randomization`을 쓰지 않으므로 같은 정의에서는 매번 같은 값이 골라집니다.
 
-결과에는 `<feature> executed twice with randomized options`로 표시되지만, **`boolean`도 `enum`도 `proposals`도 없는 feature는 두 사본이 모두 기본값으로 설치됩니다.** 이 경우 `duplicate.sh`는 "같은 옵션으로 두 번 설치해도 괜찮은가"를 검증하게 됩니다. 이 저장소의 feature가 지금 모두 그렇습니다(`prezto`는 옵션이 없고, `arm-gnu-toolchain`은 목록 없는 `string`뿐입니다).
+결과에는 `<feature> executed twice with randomized options`로 표시되지만, **`boolean`도 `enum`도 `proposals`도 없는 feature는 두 사본이 모두 기본값으로 설치됩니다.** 이 경우 `duplicate.sh`는 "같은 옵션으로 두 번 설치해도 괜찮은가"를 검증하게 됩니다. 이 저장소의 feature가 지금 모두 그렇습니다(`prezto`는 옵션이 없고, `arm-gnu-toolchain`과 `pip-packages`는 목록 없는 `string`뿐입니다).
 
 옵션 정의는 릴리즈되는 메타데이터입니다. 테스트를 위해 `enum`이나 `proposals`를 넣지 마세요. `proposals`는 사용자의 편집기에 추천값으로 그대로 노출됩니다.
 

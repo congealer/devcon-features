@@ -10,6 +10,7 @@
 |---|---|
 | [prezto](src/prezto/) | zsh 설정 프레임워크 [prezto](https://github.com/sorin-ionescu/prezto)를 설치하고 로그인 셸을 zsh로 바꿉니다 |
 | [arm-gnu-toolchain](src/arm-gnu-toolchain/) | ARM 애플리케이션을 빌드하기 위한 arm-gnu-toolchain을 설치합니다 |
+| [pip-packages](src/pip-packages/) | 컨테이너에 설치된 Python 인터프리터로 pip 패키지를 설치합니다. Python feature나 Python 이미지와 함께 씁니다 |
 
 **옵션과 동작은 각 feature의 링크를 보세요.** 이 표에는 요약만 둡니다.
 

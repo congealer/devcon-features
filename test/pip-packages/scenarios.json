@@ -16,7 +16,7 @@
                 "enableShared": true
             },
             "pip-packages": {
-                "packages": "packaging==24.1,cowsay"
+                "packages": "packaging==24.1 cowsay"
             }
         }
     },
@@ -30,18 +30,6 @@
             },
             "pip-packages": {
                 "packages": "packaging==24.1,requests[socks],cowsay"
-            }
-        }
-    },
-    "static": {
-        "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
-        "features": {
-            "ghcr.io/devcontainers/features/python:1": {
-                "version": "3.11",
-                "installTools": false
-            },
-            "pip-packages": {
-                "packages": "packaging six"
             }
         }
     },

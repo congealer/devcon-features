@@ -154,11 +154,11 @@ devcontainer features test -p . -i mcr.microsoft.com/devcontainers/python
 | 컨테이너 | 설치되는 feature | 실행되는 스크립트 |
 |---|---|---|
 | 1개 | **모든 feature를 한꺼번에** | 각 feature의 `test.sh` 3개 |
-| 9개 (시나리오당 1개) | 각 시나리오의 `features` | 각 `<scenario>.sh` (`arm-gnu-toolchain` 2, `pip-packages` 5, `prezto` 2) |
+| 8개 (시나리오당 1개) | 각 시나리오의 `features` | 각 `<scenario>.sh` (`arm-gnu-toolchain` 2, `pip-packages` 4, `prezto` 2) |
 | 3개 | `duplicate.sh`가 있는 feature를 **두 번씩** (`arm-gnu-toolchain`, `pip-packages`, `prezto`) | `duplicate.sh` |
 | 1개 | 전역 시나리오가 지정 | `prezto_and_arm.sh` |
 
-컨테이너 14개가 만들어집니다. 주의할 점이 둘 있습니다.
+컨테이너 13개가 만들어집니다. 주의할 점이 둘 있습니다.
 
 - 첫 번째 컨테이너는 **모든 feature가 함께 설치된 환경**이므로, `-f`로 하나씩 돌릴 때와 조건이 다릅니다. feature 간 간섭 문제는 이때만 드러날 수 있습니다
 - 가장 오래 걸립니다. `arm-gnu-toolchain` 관련 컨테이너는 매번 수백 MB의 툴체인을 내려받고, `pip-packages`의 시나리오 중 Python feature를 쓰는 것은 Python을 소스에서 빌드합니다

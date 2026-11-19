@@ -16,6 +16,8 @@ source ./_common.sh
 echo "python3: $(command -v python3) -> $(readlink -f "$(command -v python3)") ($(python3 --version))"
 echo "image's: /usr/local/bin/python3 ($(/usr/local/bin/python3 --version))"
 
+check "space-separated packages are installed" python3 -c 'import packaging, cowsay'
+
 check "python3 is the Python feature's" bash -c '
     case "$(readlink -f "$(command -v python3)")" in /usr/local/python/*) ;; *) exit 1 ;; esac'
 

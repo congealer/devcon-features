@@ -361,6 +361,13 @@ make release
 
 `gh auth token`으로 얻은 **개인 자격증명**을 씁니다. [release 워크플로우](.github/workflows/release.yaml)도 있지만 아직 활성화하지 않았습니다.
 
+이 토큰에는 **`write:packages` 권한**이 있어야 합니다. `gh auth login`을 기본값으로 진행하면 이 권한이 빠지고, 그러면 업로드 단계에서 `Failed to get upload session ID`로 실패합니다. `make release`가 확인하는 것은 로그인 여부뿐이라 권한이 없어도 업로드 직전까지는 진행됩니다.
+
+```bash
+gh auth status                                   # Token scopes에 write:packages가 있는지 확인
+gh auth refresh -h github.com -s write:packages  # 없으면 추가
+```
+
 ### 태그가 움직입니다
 
 `1.3.0`을 올리면 `1.3.0`, `1.3`, `1`, `latest`가 함께 올라갑니다. 앞의 둘은 새로 생기지만 **`1`과 `latest`는 기존 것에서 옮겨옵니다.** `:1`로 고정한 사용자는 다음 빌드에서 바로 받게 되므로, 올리기 전에 테스트가 통과했는지 확인하세요.
